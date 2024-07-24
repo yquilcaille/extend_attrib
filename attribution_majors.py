@@ -388,8 +388,8 @@ if False:
 # 5.4. FOURTH VERSION OF THE FIGURES
 #------------------------------------------------------------------------------------------
 if False:
-    # Figure 1 -------> put some of 2022
-    tmp_fig = figure1_v4( results=results, ind_evts=['2021-0390-USA', '2003-0391-FRA', '2022-0248-IND', '2013-0582-CHN'], emdat=emdat, data_to_do=data_to_do, name_data='ERA5')# alternatives India: '2010-0206-IND'
+    # Figure 1
+    tmp_fig = figure1_v4( results=results, ind_evts=['2021-0390-USA', '2003-0391-FRA', '2022-0248-IND', '2013-0582-CHN'], emdat=emdat, data_to_do=data_to_do, name_data='ERA5')
     fig = tmp_fig.plot(path_save=paths_out['figures_synthesis'])
     
     # Figure 2
@@ -401,8 +401,12 @@ if False:
                           entities_plot=['Tier1', 'Abu Dhabi National Oil Company', 'Petrobras'], pano=pano, method_entity='GMT')#'Shell', 
     fig = tmp_fig.plot(path_save=paths_out['figures_synthesis'])
 
-    # Table
+    # Table with all results
     tmp_tab = create_table_all(emdat, pano, emissions_FF, results )
+    tmp_tab.create(path_save=paths_out['figures_synthesis'])
+
+    # Table with the details of which data was used for each event (supplementary material)
+    tmp_tab = create_table_data_evts(results, data_to_do)
     tmp_tab.create(path_save=paths_out['figures_synthesis'])
 #------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------

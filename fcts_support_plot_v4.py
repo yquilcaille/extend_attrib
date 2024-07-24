@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import regionmask
 import scipy.spatial as sspa
-#from  matplotlib.colors import ListedColormap, BoundaryNorm
-import seaborn as sns  # # for colors
+import seaborn as sns
 import xarray as xr
 from matplotlib import cm
 from matplotlib.cm import ScalarMappable
@@ -124,7 +123,7 @@ class figure1_v4:
                         'gmt_central':4, 'gmt_uncertainties':1, 'gmt_event':3, 'gmt_median_ip':5,\
                         'return_wwo':3, 'return_lines':3, 'return_arrows':3}
         self.arrow_style = ArrowStyle('Fancy', head_length=0.5, head_width=0.5, tail_width=0.25)#ArrowStyle('Fancy', head_length=0.5, head_width=0.5, tail_width=0.25)
-        self.dico_cols = {'with_CC':CB_color_cycle[0], 'without_CC':CB_color_cycle[8], 'event':'k', 'counter_event':'grey', 'attrib':'r', 'attrib_median':'darkred', 'uncertainties':'grey', 'reg_map_country':'k', 'reg_map_event':'fuchsia'}
+        self.dico_cols = {'with_CC':CB_color_cycle[0], 'without_CC':CB_color_cycle[8], 'event':'k', 'counter_event':'grey', 'attrib':'r', 'attrib_median':'darkred', 'uncertainties':'grey', 'reg_map_country':'k', 'reg_map_event':'fuchsia', 'letter_panel_face':(0.95,0.95,0.95,0.5), 'letter_panel_edge':(0.5,0.5,0.5)}
         self.width_ratios = [0.60, 1,2, 0.75, 1,2, 0.125] # [1.10, 1,2, 0.75, 1,2, 0.125]
         self.height_ratios = [1, 3, 1]
         self.shift_subplot_bottom, self.shift_subplot_upper = 0.055, -0.020#0.030, -0.010 (0.45??)
@@ -141,7 +140,8 @@ class figure1_v4:
         ax_map.set_global() # necessary for FancyArrowPatch
         self.plot_map_country_events( ax=ax_map )#, cbaxescbaxes_map )
         t = ax_map.text(x=0.025, y=0.50, s='('+list_letters_panels[0]+')', transform=ax_map.transAxes, fontdict={'size':self.fontsizes['letter_panel']}, weight='bold',\
-                        verticalalignment='center', horizontalalignment='center', rotation_mode='anchor', bbox={'boxstyle':'round', 'facecolor':(0.85,0.85,0.85,1), 'edgecolor':(0.5,0.5,0.5,0.5), 'alpha':1})#(0.85,0.85,0.85,1)
+                        verticalalignment='center', horizontalalignment='center', rotation_mode='anchor',\
+                        bbox={'boxstyle':'round', 'facecolor':self.dico_cols['letter_panel_face'], 'edgecolor':self.dico_cols['letter_panel_edge'], 'alpha':1})
 
         # Preparation for coords of subaxes
         self.ind_row_bottom, self.ind_row_upper = 2, 0
@@ -197,7 +197,8 @@ class figure1_v4:
             cbar.ax.tick_params(labelsize=self.fontsizes['reg_cbar_ticks'])
             cbar.ax.set_xlabel('T ('+u'\u00B0C'+')', size=self.fontsizes['reg_cbar_label'])
             t = subax_reg.text(x=-0.20, y=1.0, s='('+self.letter_panel+')', transform=subax_reg.transAxes, fontdict={'size':self.fontsizes['letter_panel']}, weight='bold',\
-                               verticalalignment='center', horizontalalignment='center', rotation_mode='anchor', bbox={'boxstyle':'round', 'facecolor':(0.85,0.85,0.85,1), 'edgecolor':(0.5,0.5,0.5,0.5), 'alpha':1})#(0.85,0.85,0.85,1)
+                               verticalalignment='center', horizontalalignment='center', rotation_mode='anchor',\
+                               bbox={'boxstyle':'round', 'facecolor':self.dico_cols['letter_panel_face'], 'edgecolor':self.dico_cols['letter_panel_edge'], 'alpha':1})
 
             # creating rectangle for each case
             bbox_1 = subax_reg.get_position()
@@ -221,7 +222,8 @@ class figure1_v4:
                                                   edgecolor=(0.50,0.50,0.50,0.50), facecolor=(0.50,0.50,0.50,0.50), lw=self.dico_lw['arrow'], transform=ccrs.PlateCarree()) )#edgecolor=(0.25,0.25,0.25,1.0), facecolor=(0.3,0.3,0.3,0.85)
             if arrow_or_label in ['label','both']:
                 t = ax_map.text(x=posA[0], y=posA[1], s='('+self.letter_panel+')', transform=ccrs.PlateCarree(), fontdict={'size':self.fontsizes['letter_panel']}, weight='bold',\
-                                va='center', ha='center', rotation_mode='anchor', bbox={'boxstyle':'round', 'facecolor':(0.65,0.65,0.65,0.4), 'alpha':0.5})#(0.85,0.85,0.85,0.5)
+                                va='center', ha='center', rotation_mode='anchor',\
+                                bbox={'boxstyle':'round', 'facecolor':self.dico_cols['letter_panel_face'], 'edgecolor':self.dico_cols['letter_panel_edge'], 'alpha':1})
 
         # save
         self.fig.savefig( os.path.join( path_save, 'figure1_v4.png' ), dpi=300 )
@@ -393,7 +395,7 @@ class figure1_v4:
                 tmp[tm] = str(self.evt_id.event_period[tm]['Year']) + '.' + str(self.evt_id.event_period[tm]['Month']) + '.' + str(self.evt_id.event_period[tm]['Day'])
         textstr = "Reported period: " + "\n" + tmp['Start'] + ' - ' + tmp['End']
         t2 = ax_window.text(x=0.5, y=-0.125, s=textstr, transform=ax_window.transAxes, fontdict={'size':self.fontsizes['attrib_txt_period']},\
-                            verticalalignment='center', horizontalalignment='center', rotation_mode='anchor', bbox={'boxstyle':'round', 'facecolor':(0.85,0.85,0.85,1), 'alpha':1})
+                            verticalalignment='center', horizontalalignment='center', rotation_mode='anchor', bbox={'boxstyle':'round', 'facecolor':(0.95,0.95,0.95,1), 'alpha':1})
         
         # adding title
         #ttl0 = '$T_{'+self.window+'}$ of '+self.evt_id.name_data
@@ -971,7 +973,7 @@ class figure3_v4:
         for i_entity, entity in enumerate(self.list_entities_plot):
             if i_entity % 7 == 0:
                 count_nogray += 1
-            self.local_dico_col_entities[entity] = CB_color_cycle[i_entity+count_nogray]
+            self.local_dico_col_entities[entity] = tuple(np.array(CB_color_cycle[i_entity+count_nogray]) * 0.8) # darkening colors to facilitate readibility
         
         # creating figure
         self.fig = plt.figure( figsize=(self.width_figure, 1.0*self.width_figure) )
@@ -1900,6 +1902,88 @@ class create_table_all:
     #--------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+#---------------------------------------------------------------------------------------------------------------------------
+# TABLE THAT DETAILS WHICH OBSs & ESMs HAVE BEEN USED FOR EACH EVENT
+#---------------------------------------------------------------------------------------------------------------------------
+class create_table_data_evts:
+    def __init__( self, results, data_to_do ):
+        # initialization
+        self.results = results
+        self.data_to_do = data_to_do
+
+        # preparation
+        self.list_events = list(self.results.keys())
+        self.list_data = list(self.data_to_do.keys())
+    #--------------------------------------------------------------
+
+
+    #--------------------------------------------------------------
+    # RESULTS
+    def write_header(self):
+        row_tmp = ['Disaster number in EM-DAT'] + self.list_events
+        self.sheet.append( row_tmp )
+        for col in range(1, self.sheet.max_column+1):
+            cell = self.sheet.cell(1, col)
+            cell.font = openpyxl.styles.Font(bold=True)
+            cell.alignment = openpyxl.styles.Alignment(horizontal='center', vertical='center')
+
+    def write_data(self, dat):
+        row_tmp = [dat]
+
+        for evt in self.list_events:
+            if dat in self.results[evt][4].datasets_postselection:
+                row_tmp.append('X')
+            else:
+                row_tmp.append('')
+        self.sheet.append( row_tmp )
+
+        # centering everything
+        for col in range(1, self.sheet.max_column+1):
+            cell = self.sheet.cell(self.sheet.max_row, col)
+            cell.alignment = openpyxl.styles.Alignment(horizontal='center', vertical='center')
+            if col == 1:
+                cell.font = openpyxl.styles.Font(bold=True)
+    #--------------------------------------------------------------
+    
+    
+    #--------------------------------------------------------------
+    # CREATION
+    def create( self, path_save):
+        # Create a new excel workbook
+        self.workbook = openpyxl.Workbook()
+        # Select the default sheet
+        self.sheet = self.workbook.active
+        
+        # create header
+        self.write_header()
+
+        # create one row per event
+        for dat in self.list_data:
+            self.write_data(dat)
+
+        # preparing cleaning
+        column_letters = list(openpyxl.utils.get_column_letter(col_number + 1) for col_number in range(self.sheet.max_column))
+        for icol, column_letter in enumerate(column_letters):
+            self.sheet.column_dimensions[column_letter].bestFit = True
+            
+        # saving
+        self.workbook.save(os.path.join(path_save, 'table_data_events.xlsx'))
+    #--------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
 
 
 
