@@ -2,7 +2,6 @@ import time as ti
 
 import numpy as np
 import xarray as xr
-from fcts_support_plot import *
 from fcts_support_select import *
 
 from fcts_support_io import *
