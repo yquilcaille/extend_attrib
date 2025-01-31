@@ -694,7 +694,7 @@ class files_cmip6():
                 if type( self.gmt_esm[esm].time.values[0] ) == np.datetime64:
                     yr_0 = pd.DatetimeIndex( self.gmt_esm[esm].time.values ).shift(periods=-3, freq='Y')
                 else:
-                    yr_0 = xr.CFTimeIndex( self.gmt_esm[esm].time.values ).shift( freq='Y', n=-3 )
+                    yr_0 = xr.CFTimeIndex( self.gmt_esm[esm].time.values ).shift( freq='Y', periods=-3 )
                 # averaging
                 val_gmt = []
                 for i, yr in enumerate( self.gmt_esm[esm].time.values ):
@@ -917,7 +917,7 @@ class files_cmip6ng():
                 if type( self.gmt_esm[esm].time.values[0] ) == np.datetime64:
                     yr_0 = pd.DatetimeIndex( self.gmt_esm[esm].time.values ).shift(periods=-3, freq='Y')
                 else:
-                    yr_0 = xr.CFTimeIndex( self.gmt_esm[esm].time.values ).shift( freq='Y', n=-3 )
+                    yr_0 = xr.CFTimeIndex( self.gmt_esm[esm].time.values ).shift( freq='Y', periods=-3 )
                 # averaging
                 val_gmt = []
                 for i, yr in enumerate( self.gmt_esm[esm].time.values ):

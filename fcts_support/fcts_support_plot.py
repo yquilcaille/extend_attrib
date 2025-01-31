@@ -69,6 +69,7 @@ dico_color_entities = {ent:CB_color_cycle[i_ent] for i_ent, ent in enumerate(lis
 list_letters_panels = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 
 
+# ploting choice for Liechtenstein, because doesnt appear in regionmask
 dico_add_emdatcountries_regionmask = {'Bosnia and Herzegovina':['Bosnia and Herz.'],\
                                       'Bolivia (Plurinational State of)':['Bolivia'],\
                                       'Canary Is':['Spain'],\
@@ -77,6 +78,7 @@ dico_add_emdatcountries_regionmask = {'Bosnia and Herzegovina':['Bosnia and Herz
                                       "Democratic People's Republic of Korea":['North Korea'],\
                                       "Korea (the Democratic People's Republic of)":['North Korea'],\
                                       'Korea (the Republic of)':['South Korea'],\
+                                      'Liechtenstein':['Switzerland'],\
                                       'Malta':['Cyprus'],\
                                       'Macedonia (the former Yugoslav Republic of)':['North Macedonia'],\
                                       'Netherlands (the)':['Netherlands'],\
@@ -102,7 +104,7 @@ dico_add_emdatcountries_regionmask = {'Bosnia and Herzegovina':['Bosnia and Herz
 #---------------------------------------------------------------------------------------------------------------------------
 # FIGURE 1
 #---------------------------------------------------------------------------------------------------------------------------
-class figure1_v4:
+class figure_mapevents:
     #--------------------------------------------------------------
     # BASIC FUNCTIONS
     def __init__( self, results, ind_evts, emdat, data_to_do, name_data, width_figure=21 ):
@@ -117,19 +119,19 @@ class figure1_v4:
                           'reg_cbar_label':0.7*self.fontsize, 'reg_cbar_ticks':0.7*self.fontsize,\
                           'gmt_legend':0.65*self.fontsize, 'gmt_legend_title':0.75*self.fontsize, 'gmt_text':0.70*self.fontsize, 'gmt_axis_ticks':0.65*self.fontsize,\
                           'gmt_axis_ticks_bars':0.7*self.fontsize, 'gmt_title':0.675*self.fontsize, 'gmt_axis_labels':0.70*self.fontsize, \
-                          'attrib_legend':0.70*self.fontsize, 'attrib_legend_title':0.75*self.fontsize, 'attrib_axis_ticks':0.7*self.fontsize, 'attrib_axis_labels':0.8*self.fontsize, 'attrib_txt_period':0.6*self.fontsize }
+                          'attrib_legend':0.70*self.fontsize, 'attrib_legend_title':0.75*self.fontsize, 'attrib_axis_ticks':0.7*self.fontsize, 'attrib_axis_labels':0.8*self.fontsize, 'attrib_txt_period':0.7*self.fontsize }
         self.dico_lw = {'rect_cases':3, 'global_map':3, 'arrow':2, \
                         'reg_map_country':2, 'reg_map_reg':3, \
                         'gmt_central':4, 'gmt_uncertainties':1, 'gmt_event':3, 'gmt_median_ip':5,\
                         'return_wwo':3, 'return_lines':3, 'return_arrows':3}
         self.arrow_style = ArrowStyle('Fancy', head_length=0.5, head_width=0.5, tail_width=0.25)#ArrowStyle('Fancy', head_length=0.5, head_width=0.5, tail_width=0.25)
-        self.dico_cols = {'with_CC':CB_color_cycle[0], 'without_CC':CB_color_cycle[8], 'event':'k', 'counter_event':'grey', 'attrib':'r', 'attrib_median':'darkred', 'uncertainties':'grey', 'reg_map_country':'k', 'reg_map_event':'fuchsia', 'letter_panel_face':(0.95,0.95,0.95,0.5), 'letter_panel_edge':(0.5,0.5,0.5)}
+        self.dico_cols = {'with_CC':CB_color_cycle[0], 'without_CC':CB_color_cycle[8], 'event':'k', 'counter_event':'grey', 'attrib':'r', 'attrib_median':'darkred', 'uncertainties':'grey', 'reg_map_country':'k', 'reg_map_event':'limegreen', 'letter_panel_face':(0.95,0.95,0.95,0.5), 'letter_panel_edge':(0.5,0.5,0.5)}
         self.width_ratios = [0.60, 1,2, 0.75, 1,2, 0.125] # [1.10, 1,2, 0.75, 1,2, 0.125]
         self.height_ratios = [1, 3, 1]
         self.shift_subplot_bottom, self.shift_subplot_upper = 0.055, -0.020#0.030, -0.010 (0.45??)
         self.shift_subplot_reg = 0.01
         self.factor_sizes_reg = 1.10#22#39
-        self.shift_axbars_gmt_int, self.shift_axbars_gmt_prb, self.width_axbars_gmt = 0.0075, 0.010, 0.0125
+        self.shift_axbars_gmt_int, self.shift_axbars_gmt_prb, self.width_axbars_gmt = 0.010, 0.010, 0.0125
         
     def plot( self, path_save, attrib_or_gmt='gmt', arrow_or_label='both' ):
         self.fig = plt.figure( figsize=(self.width_figure, self.width_figure) )
@@ -184,7 +186,7 @@ class figure1_v4:
                 subax_attribgmt, bbox_2 = self.plot_gmt( spec_c=self.dico_subplot_evts[ind_evt]+np.array([0,1]), ind_evt=ind_evt, ranges=[50, 90, 95], alpha_ranges=[0.5,0.3,0.15] )
             
             # plot map of region of event
-            subax_reg, pmesh_reg = self.plt_reg( ax_map=ax_map, spec_c=self.dico_subplot_evts[ind_evt], obs_selecttime=obs_selecttime)
+            subax_reg, pmesh_reg = self.plt_reg( spec_c=self.dico_subplot_evts[ind_evt], obs_selecttime=obs_selecttime)
             pos = subax_reg.get_position()
             subax_reg.set_position([ pos.x0-(self.factor_sizes_reg-1)*pos.width-self.shift_subplot_reg, \
                                     pos.y0-0.5*(self.factor_sizes_reg-1)*pos.height + self.dico_shifts_subplots[self.dico_subplot_evts[ind_evt][0]], \
@@ -226,8 +228,8 @@ class figure1_v4:
                                 bbox={'boxstyle':'round', 'facecolor':self.dico_cols['letter_panel_face'], 'edgecolor':self.dico_cols['letter_panel_edge'], 'alpha':1})
 
         # save
-        self.fig.savefig( os.path.join( path_save, 'figure1_v4.png' ), dpi=300 )
-        self.fig.savefig( os.path.join( path_save, 'figure1_v4.pdf' ) )
+        self.fig.savefig( os.path.join( path_save, 'figure_mapevents.png' ), dpi=300 )
+        self.fig.savefig( os.path.join( path_save, 'figure_mapevents.pdf' ) )
         return self.fig
     #--------------------------------------------------------------
 
@@ -360,9 +362,9 @@ class figure1_v4:
         return spareg, mask, central_longitude, lon_borders, lat_borders
 
     
-    def plt_reg(self, ax_map, spec_c, obs_selecttime):
+    def plt_reg(self, spec_c, obs_selecttime):
         # centering projection (in case of countries stretching over -180 East: USA, New Zealand, etc)
-        ax_window = plt.subplot( self.spec[spec_c[0],spec_c[1]], projection=ccrs.Robinson(central_longitude=self.central_longitude) )
+        ax_window = plt.subplot( self.spec[spec_c[0],spec_c[1]], projection=ccrs.Robinson(central_longitude=int(self.central_longitude)) )
         ax_window.coastlines()
 
         # ploting whole country
@@ -378,12 +380,13 @@ class figure1_v4:
         if 'member' in dt.coords:
             dt = dt.mean('member')
         data_map = dt.compute()
+        mask_data_map = xr.where(self.mask>0, data_map, np.nan)
 
         # ploting
         pmesh = ax_window.pcolormesh(obs_selecttime[self.window]['lon'], \
                                      obs_selecttime[self.window]['lat'], \
-                                     xr.where(self.mask>0, data_map, np.nan), cmap='Reds', \
-                                     transform=ccrs.PlateCarree(), rasterized=True , vmin=xr.where( self.mask>0, data_map, np.nan).min(), vmax=xr.where( self.mask>0, data_map, np.nan).max() )
+                                     mask_data_map, cmap='Reds', \
+                                     transform=ccrs.PlateCarree(), rasterized=True , vmin=mask_data_map.min(), vmax=mask_data_map.max() )
         ax_window.set_extent( (self.lon_borders[0], self.lon_borders[1], self.lat_borders[0], self.lat_borders[1]), crs=ccrs.PlateCarree())
 
         # text for period of event
@@ -394,7 +397,7 @@ class figure1_v4:
             else:
                 tmp[tm] = str(self.evt_id.event_period[tm]['Year']) + '.' + str(self.evt_id.event_period[tm]['Month']) + '.' + str(self.evt_id.event_period[tm]['Day'])
         textstr = "Reported period: " + "\n" + tmp['Start'] + ' - ' + tmp['End']
-        t2 = ax_window.text(x=0.5, y=-0.125, s=textstr, transform=ax_window.transAxes, fontdict={'size':self.fontsizes['attrib_txt_period']},\
+        t2 = ax_window.text(x=0.5, y=-0.25, s=textstr, transform=ax_window.transAxes, fontdict={'size':self.fontsizes['attrib_txt_period']},\
                             verticalalignment='center', horizontalalignment='center', rotation_mode='anchor', bbox={'boxstyle':'round', 'facecolor':(0.95,0.95,0.95,1), 'alpha':1})
         
         # adding title
@@ -555,11 +558,12 @@ class figure1_v4:
         # preparing gmt
         gmt_full = self.evt_fits[self.name_data].data_gmt
         rescale_pi = (gmt_full.sel(time=slice(1961,1990)).mean() - 0.36)# IPCC AR6 Chapter2, Cross Chapter Box 2.3, Table 1
-        gmt_range_full = xr.DataArray(np.linspace(rescale_pi - 0.05*(gmt_full.max()-gmt_full.min()), gmt_full.max() + 0.05*(gmt_full.max()-gmt_full.min()), gmt_full.time.size), coords={'time':gmt_full.time})
-        
-        # for plots
         gmt = gmt_full - rescale_pi
-        gmt_range = gmt_range_full - rescale_pi
+        bnds_gmt = (- 0.05*(gmt.max()-gmt.min())).values, (gmt.max() + 0.05*(gmt.max()-gmt.min())).values
+        gmt_range = xr.DataArray(np.linspace(bnds_gmt[0], bnds_gmt[1], gmt_full.time.size), coords={'time':gmt_full.time})
+        gmt_range_full = gmt_range + rescale_pi # for calculation
+
+        # for plot
         obs = self.evt_fits[self.name_data].data_obs[self.window]
         yr = self.evt_fits[self.name_data].event_year
         
@@ -585,9 +589,9 @@ class figure1_v4:
             # for each quantile, values for all bootstrapped member
             values = {}
             for q in self.evt_fits[self.name_data].dico_q_range:
-                params = {'loc':self.evt_fits[self.name_data].parameters[self.window]['loc'].sel(label='plot_distrib_'+str(level_range)),\
-                          'scale':self.evt_fits[self.name_data].parameters[self.window]['scale'].sel(label='plot_distrib_'+str(level_range)),\
-                          'c':-self.evt_fits[self.name_data].parameters[self.window]['shape'].sel(label='plot_distrib_'+str(level_range))}
+                params = {'loc':self.evt_fits[self.name_data].parameters[self.window]['loc'].sel(label='plot_distrib_'+str(level_range), time=gmt_range_full.time),\
+                          'scale':self.evt_fits[self.name_data].parameters[self.window]['scale'].sel(label='plot_distrib_'+str(level_range), time=gmt_range_full.time),\
+                          'c':-self.evt_fits[self.name_data].parameters[self.window]['shape'].sel(label='plot_distrib_'+str(level_range), time=gmt_range_full.time)}
                 # if run multiple times, may add several times same label (TO DO: in fcts_support_training, edit to rewrite data if same label)
                 for pp in params:
                     if params[pp].label.size > 1:
@@ -638,11 +642,12 @@ class figure1_v4:
         # finish plot
         _ = plt.xticks( size=self.fontsizes['gmt_axis_ticks'] )
         _ = plt.yticks( size=self.fontsizes['gmt_axis_ticks'] )
-        ax.set_xlabel( 'Change in Global Mean Temperature\nwith reference to 1850-1900 ('+u'\u00B0C'+')', size=self.fontsizes['gmt_axis_labels'] )
+        ax.set_xlabel( 'Change in Global Mean Surface Temperature\nwith reference to 1850-1900 ('+u'\u00B0C'+')', size=self.fontsizes['gmt_axis_labels'] )
         ax.set_ylabel( 'Intensity T ('+u'\u00B0C'+')', size=self.fontsizes['gmt_axis_labels'], labelpad=-1 )
         pos = ax.get_position()
         ax.set_position([pos.x0, pos.y0 + self.dico_shifts_subplots[self.dico_subplot_evts[ind_evt][0]],\
                          pos.width - (self.shift_axbars_gmt_int + self.shift_axbars_gmt_prb + 2*self.width_axbars_gmt), pos.height])
+        ax.xaxis.set_label_coords(0.40, -0.075)
         
         # adding bar for intensities
         pos_new = ax.get_position()
@@ -711,8 +716,11 @@ class figure1_v4:
                                 ls='-', lw=self.dico_lw['gmt_median_ip'], color=self.dico_cols['event'] )
 
         # finishing the plot
-        yl = [np.max([1.e-4,prb['confid_bottom'].sel(label='without_CC')]), prb['confid_upper'].sel(label='with_CC')]
-        yl[1] += 0.025*(yl[1]-yl[0])
+        if False: # adapt the y axis to the probabilities there
+            yl = [np.max([1.e-4,prb['confid_bottom'].sel(label='without_CC')]), prb['confid_upper'].sel(label='with_CC')]
+            yl[1] += 0.025*(yl[1]-yl[0])
+        else: # same yl for all
+            yl = [1.e-4, 2/10]
         _ = ax_probabilities.set_ylim(yl)
         ax_probabilities.set_yscale('log')
         # labels=['$10^'+str(-int(np.log10(s)))+'$' for s in ax_probabilities.get_yticks()]
@@ -749,12 +757,14 @@ class figure1_v4:
 #---------------------------------------------------------------------------------------------------------------------------
 # FIGURE 2
 #---------------------------------------------------------------------------------------------------------------------------
-class figure2_v4:
+class figure_panorama:
     #--------------------------------------------------------------
     # BASIC FUNCTIONS
-    def __init__( self, emdat, pano, width_figure=21 ):
+    def __init__( self, emdat, pano, emdat_start_year, emdat_end_year, width_figure=21 ):
         self.emdat = emdat
         self.pano = pano
+        self.emdat_start_year = emdat_start_year
+        self.emdat_end_year = emdat_end_year
         self.width_figure = width_figure
         self.fontsize = 20
         self.fontsizes = {'pano_legend':0.925*self.fontsize, 'pano_legend_title':1.0*self.fontsize, 'pano_axis_ticks':0.85*self.fontsize,\
@@ -775,7 +785,7 @@ class figure2_v4:
         values_suppl = self.pano.contribs_all['values_global_I_median']
 
         list_subax_pano = []
-        for i_period, period in enumerate( [[2000,2009], [2010,2019], [2020,2022]] ):
+        for i_period, period in enumerate( [[2000,2009], [2010,2019], [2020,self.emdat_end_year]] ):
             # selecting only the events that are within the period
             ind_evts = self.emdat['DisNo.'].where( (self.emdat['Start Year'] >= period[0]) & (self.emdat['Start Year'] <= period[1]), drop=True )
 
@@ -795,8 +805,8 @@ class figure2_v4:
             subax_pano.set_yticks( ticks=ticks, labels=ticks, size=self.fontsizes['pano_axis_ticks'] )
             
         # save
-        self.fig.savefig( os.path.join( path_save, 'figure2_v4.png' ), dpi=300 )
-        self.fig.savefig( os.path.join( path_save, 'figure2_v4.pdf' ) )
+        self.fig.savefig( os.path.join( path_save, 'figure_panorama.png' ), dpi=300 )
+        self.fig.savefig( os.path.join( path_save, 'figure_panorama.pdf' ) )
         return self.fig
     #--------------------------------------------------------------
 
@@ -919,7 +929,7 @@ class figure2_v4:
 #---------------------------------------------------------------------------------------------------------------------------
 # FIGURE 3
 #---------------------------------------------------------------------------------------------------------------------------
-class figure3_v4:
+class figure_carbonmajors:
     #--------------------------------------------------------------
     # BASIC FUNCTIONS
     def __init__( self, emissions_FF, emissions_GCB, dGMT_OSCAR, data_to_do, emissions_Jones023, pano, entities_plot, emdat, method_entity, width_figure=21, fraction_tier1=0.5, level_OSCAR='mean' ):
@@ -940,6 +950,7 @@ class figure3_v4:
         self.y_arrow0, self.y_arrow1, self.yarrow_others = 0.88, 0.050, 0.45
         self.years_plot = np.arange(1950, 2022+1)
         self.years_integration = np.arange(1850,2022+1)
+        print("Warning: no emissions from carbon majors available from 2022")
         self.year_ref = 2022
         self.space_time_bar, self.width_time_bar = 0.005, 0.03
         self.lw_thin_entities = 0.125
@@ -1012,11 +1023,11 @@ class figure3_v4:
             ax = plt.subplot(self.spec[row_spec, col_spec])
             if False:
                 ax = self.plot_pano_a(ax=ax, entity=entity, values_main=values_main, values_suppl=values_suppl, units={'main':'', 'suppl':u'\u00B0C'}, \
-                                    bounds_main=[1.0, 1.1, 10, 100, 1000, np.inf], ticks_main=[1, 1.1, 10, 100, 1000, 10000],\
+                                    bounds_main=[1.0, 1.1, 10, 100, 1000, 10000, np.inf], ticks_main=[1, 1.1, 10, 100, 1000, 10000, 20000],\
                                     bounds_suppl=[0., 0.01, 0.05, 0.10, 0.20, 0.40], ticks_suppl=[0., 0.01, 0.05, 0.10, 0.20, 0.40])
             else:
                 ax = self.plot_pano_b(ax_window=ax, entity=entity, values_main=values_main, values_suppl=values_suppl, units={'main':'', 'suppl':u'\u00B0C'}, \
-                                    bounds_main=[1.0, 1.1, 10, 100, 1000, np.inf], bounds_suppl=[0., 0.01, 0.05, 0.10, 0.20, 0.40],\
+                                    bounds_main=[1.0, 1.1, 10, 100, 10000, np.inf], bounds_suppl=[0., 0.01, 0.05, 0.10, 0.20, 0.40],\
                                     list_col_suppl = ['yellow', 'gold', 'darkorange', 'red', 'darkred'], integer_legend=False, do_legend=(i_entity==7))
             # labels_main = ['\n$< +10\%$', '$+10\%$\nto\n$+100\%$', '$+100\%$\nto\n$1.10^4$', '\n$> 1.10^4$' ]
             #list_letters_panels[0]
@@ -1045,8 +1056,8 @@ class figure3_v4:
                           fontdict={'size':self.fontsizes['group_title'], 'weight':'bold'}, verticalalignment='center', horizontalalignment='center', rotation_mode='anchor', bbox={'facecolor':'white', 'alpha':0, 'edgecolor':'white'})
         
         # save
-        self.fig.savefig( os.path.join( path_save, 'figure3-'+self.method_entity+'_v4.png' ), dpi=300 )
-        self.fig.savefig( os.path.join( path_save, 'figure3-'+self.method_entity+'_v4.pdf' ) )
+        self.fig.savefig( os.path.join( path_save, 'figure_carbonmajors-'+self.method_entity+'.png' ), dpi=300 )
+        self.fig.savefig( os.path.join( path_save, 'figure_carbonmajors-'+self.method_entity+'.pdf' ) )
         return self.fig
     #--------------------------------------------------------------
 
@@ -1253,7 +1264,7 @@ class figure3_v4:
                         'cumulative_emissions_CH4':self.unit_CH4}[variable]
             plt.title( '('+letter_panel+'): '+txt + txt_luc + txt_cum + ' ('+txt_unit+')', size=self.fontsizes['title'] )
         else:
-            plt.title( '('+letter_panel+'): '+'Change in Global Mean Temperature\nwith reference to 1850-1900 ('+ u'\u00B0C'+')', size=self.fontsizes['title'] )
+            plt.title( '('+letter_panel+'): '+'Change in Global Mean Surface Temperature\nwith reference to 1850-1900 ('+ u'\u00B0C'+')', size=self.fontsizes['title'] )
         
         # 1st legend
         lgd1 = plt.legend( plot_1st_legend, [pp.get_label() for pp in plot_1st_legend], loc='upper left', prop={'size':self.fontsizes['legend']}, frameon=False, markerfirst=False )
@@ -1550,13 +1561,14 @@ class figure3_v4:
 # TABLE WITH ALL RESULTS
 #---------------------------------------------------------------------------------------------------------------------------
 class create_table_all:
-    def __init__( self, emdat, pano, emissions_FF, results ):
+    def __init__( self, emdat, pano, emissions_FF, results, events_excluded ):
         # initialization
         self.emdat = emdat
         self.pano = pano
         self.emissions_FF = emissions_FF
-        self.results = results
-
+        self.events_excluded = events_excluded
+        self.results = {evt:results[evt] for evt in results.keys() if evt not in self.events_excluded}
+        
         # preparation
         self.sort_axis_events()
         self.sort_axis_entities()
@@ -1567,12 +1579,13 @@ class create_table_all:
         # create dico of countries where events occured
         self.dico_countries_events = {}
         for ind_evt in self.emdat.index.values:
-            cou = str(self.emdat['Country'].sel(index=ind_evt).values)
-            if cou in dico_add_emdatcountries_regionmask:
-                cou = dico_add_emdatcountries_regionmask[cou][0]
-            if cou not in self.dico_countries_events:
-                self.dico_countries_events[cou] = []
-            self.dico_countries_events[cou].append( str(self.emdat['DisNo.'].sel(index=ind_evt).values) )
+            if self.emdat['DisNo.'].sel(index=ind_evt) not in self.events_excluded:
+                cou = str(self.emdat['Country'].sel(index=ind_evt).values)
+                if cou in dico_add_emdatcountries_regionmask:
+                    cou = dico_add_emdatcountries_regionmask[cou][0]
+                if cou not in self.dico_countries_events:
+                    self.dico_countries_events[cou] = []
+                self.dico_countries_events[cou].append( str(self.emdat['DisNo.'].sel(index=ind_evt).values) )
         self.dico_worldregions_events = {}
         for cou in self.dico_countries_events.keys():
             if cou in dico_add_emdatcountries_regionmask:
@@ -1716,10 +1729,10 @@ class create_table_all:
     def write_introduction(self):
         text = [
             "Supplementary table for the scientific publication: Systematic attribution of historical heatwaves to the emissions of carbon majors",\
-            "Authors: Yann Quilcaille, Lukas Gudmundsson, Dominik Schumacher, Thomas Gasser, Rick Heede, Quentin Lejeune, Shruti Nath, Wim Thiery, Carl-Friedrich Schleussner, Sonia I. Seneviratne",\
+            "Authors: Yann Quilcaille, Lukas Gudmundsson, Dominik Schumacher, Thomas Gasser, Rick Heede, Corina Heri, Quentin Lejeune, Shruti Nath, Philippe Naveau, Wim Thiery, Carl-Friedrich Schleussner, Sonia I. Seneviratne",\
             "Contact: Yann Quilcaille (yann.quilcaille@env.ethz.ch)",\
             " ",\
-            "Description: For each one of the 187 heatwaves reported to the disaster database EM-DAT over 2000-2022, an extreme event attribution is performed, to obtain how much anthropogenic climate change has changed the intensity ('Change in intensity') and multiplied the probability ('Probability Ratio') of the heatwave with reference to preindustrial levels. Each extreme event attribution is extended to the emissions of 122 carbon majors, showing how much each carbon major has individually contributed to the intensity ('Contribution to intensity') and multiplied the probability ('Multiplication of preindustrial probability') of the heatwave with reference to preindustrial levels.",\
+            "Description: For each one of the 226 heatwaves reported to the disaster database EM-DAT over 2000-2023, an extreme event attribution is performed, to obtain how much anthropogenic climate change has changed the intensity ('Change in intensity') and multiplied the probability ('Probability Ratio') of the heatwave with reference to preindustrial levels. Each extreme event attribution over 2000-2022 is extended to the emissions of 122 carbon majors, showing how much each carbon major has individually contributed to the intensity ('Contribution to intensity') and multiplied the probability ('Multiplication of preindustrial probability') of the heatwave with reference to preindustrial levels.",\
             "Definition: Extreme Event Attribution: Field of study in climate science that uses physics and statistics to assess the influence of anthropogenic climate change on extreme events, such as heatwaves. More details can be found here: https://www.worldweatherattribution.org/ & https://doi.org/10.5194/ascmo-6-177-2020",\
             "Definition: Carbon Major: Businesses who directly profit from fossil fuel production or other high emitting activities. These entities may be investor-owned, state-owned or nation-states producers. More details can be found here: https://doi.org/10.1007/s10584-013-0986-y",\
             "Disclaimer: The results provided in this table and in the scientific publication are to be considered as scientific information, and not as the quantification of legal responsibilities of actors. This work was driven by two objectives: systematizing extreme event attribution to more events, and extending the attribution to the emitters. The carbon majors were chosen as a category of emitters, because this perspective was less studied by the scientific literature. The entirety of the value chain (Scope 1, 2 and 3) are allocated to the carbon majors, because of data availability.",\
@@ -1739,19 +1752,19 @@ class create_table_all:
         row4_tmp = ['Reported location', '', '', '']
         row5_tmp = ['Reported period', '', '', '']
         row6_tmp = ['Best estimate & confidence interval', '', '', '']
-        for reg in tmp_tab.list_worldregions_events:
-            for cou in tmp_tab.dico_worldregions_events[reg]:
-                for evt in tmp_tab.dico_countries_events[cou]:
-                    for stat in tmp_tab.range_stats:
-                        if (cou == tmp_tab.dico_worldregions_events[reg][0]) and (evt == tmp_tab.dico_countries_events[cou][0]) and (stat == tmp_tab.range_stats[0]):
+        for reg in self.list_worldregions_events:
+            for cou in self.dico_worldregions_events[reg]:
+                for evt in self.dico_countries_events[cou]:
+                    for stat in self.range_stats:
+                        if (cou == self.dico_worldregions_events[reg][0]) and (evt == self.dico_countries_events[cou][0]) and (stat == self.range_stats[0]):
                             row1_tmp.append(reg)
                         else:
                             row1_tmp.append('')
-                        if (evt == tmp_tab.dico_countries_events[cou][0]) and (stat == tmp_tab.range_stats[0]):
+                        if (evt == self.dico_countries_events[cou][0]) and (stat == self.range_stats[0]):
                             row2_tmp.append(cou)
                         else:
                             row2_tmp.append('')
-                        if (stat == tmp_tab.range_stats[0]):
+                        if (stat == self.range_stats[0]):
                             row3_tmp.append(evt)
                             row4_tmp.append( self.prepare_location(evt) )
                             row5_tmp.append( self.prepare_period(evt) )
@@ -1982,8 +1995,152 @@ class create_table_data_evts:
 
 
 
+#---------------------------------------------------------------------------------------------------------------------------
+# FIGURE COMPARING RECONSTRUCTED PROBABILITY OF EVENT FROM CONTRIBUTIONS TO TOTAL PROBABILITY
+#---------------------------------------------------------------------------------------------------------------------------
+class figure_decomposition:
+    def __init__(self, results):
+        self.results = results
+        self.analyze()
+
+    def analyze(self):
+        #---------------------------------
+        # prepare probabilities to search for discrepancies
+        self.confid = 95
+        tmp_dico_q_confid = {'confid_bottom': (1-self.confid/100)/2, 'confid_upper': 1-(1-self.confid/100)/2}
+        self.analysis = []
+        for idisno, disno in enumerate(self.results.keys()):
+            print('Event ' + str(idisno+1) + '/' + str(len(self.results)), end='\r')
+            # preparing
+            synth = self.results[disno][4]
+            attrib = self.results[disno][3]
+    
+            values = {'removal':{}, 'addition':{}, 'both':{}, 'obj':{}, 'nat':{}}
+            for idata, name_data in enumerate(synth.datasets_postselection):
+                # probabilities
+                p_full = synth.probas_GMT[name_data]['p_full']
+                p_nat = synth.probas_GMT[name_data]['p_nat']
+                p_removal = synth.probas_GMT[name_data]['p_full'] - synth.probas_GMT[name_data]['p_fullminusentity']
+                p_addition = synth.probas_GMT[name_data]['p_onlyentity'] - synth.probas_GMT[name_data]['p_noentities']
+                values['removal'][name_data] = synth.probas_GMT[name_data]['p_noentities'] + p_removal.sum('label')
+                values['addition'][name_data]  = synth.probas_GMT[name_data]['p_noentities'] + p_addition.sum('label')
+                values['both'][name_data]  =  0.5 * (values['removal'][name_data] + values['addition'][name_data])
+                values['obj'][name_data]  =  p_full
+                values['nat'][name_data]  =  p_nat
+    
+            # pooling together values
+            sth = xr.Dataset()
+            for var in values.keys():
+                dims = ('datasets', 'bootstrap',)
+                sth[var] = xr.DataArray(np.nan, dims=dims,\
+                                                  coords={'datasets':synth.datasets_postselection, 'bootstrap':values[var]['ERA5'].bootstrap})
+                for name_data in synth.datasets_postselection:
+                    sth[var].loc[{'datasets':name_data}] = values[var][name_data].values
+                vals = sth[var]#.values
+                # identify datasets
+                obs_dat = [d for d in vals.datasets.values if d in synth.obs_products]
+                mod_dat = [d for d in vals.datasets.values if d not in synth.obs_products]
+                
+                # calculate stats on observational datasets
+                tmp = xr.Dataset()
+                tmp['obs_median'] = vals.sel(datasets=obs_dat).median( dims )
+                for k in tmp_dico_q_confid:
+                    tmp['obs_'+k] = vals.sel(datasets=obs_dat).quantile( q=tmp_dico_q_confid[k], dim=dims ).drop('quantile')
+                # calculate stats on model datasets
+                tmp['mod_median'] = vals.sel(datasets=mod_dat).median( dims )
+                for k in tmp_dico_q_confid:
+                    tmp['mod_'+k] = vals.sel(datasets=mod_dat).quantile( q=tmp_dico_q_confid[k], dim=dims ).drop('quantile')
+                # average
+                sth[var+'_median'] = 0.5 * (tmp['obs_median'] + tmp['mod_median'])
+                for k in tmp_dico_q_confid:
+                    sth[var+'_'+k] = 0.5 * (tmp['obs_'+k] + tmp['mod_'+k])
+            self.analysis.append( sth.assign_coords({'disno':disno}) )
+        self.analysis = xr.concat( self.analysis, dim='disno' )
+
+        # checking
+        test1 = self.analysis['disno'].where((self.analysis['obj_median']<self.analysis['both_confid_bottom']) | 
+                                             (self.analysis['both_confid_upper']<self.analysis['obj_median']),drop=True)
+        print("Number of issues: "+str(len(test1)))
+        test2 = self.analysis['disno'].where((self.analysis['both_median']<self.analysis['obj_confid_bottom']) |
+                                             (self.analysis['obj_confid_upper']<self.analysis['both_median']),drop=True)
+        print("Number of issues: "+str(len(test2)))
+        # '2022-0465-CYP'
+
+    
+    def plot(self, path_save):
+        # Plot check SumP vs Pobj
+        fig = plt.figure( figsize=(15,15) )
+        dico_cols = {'addition':CB_color_cycle[0], 'removal':CB_color_cycle[8], 'both':CB_color_cycle[2], 'obj':'k'}
+        dico_labels = {'addition':"Method 'Add-One-to-None' (AON)",\
+                       'removal':"Method 'All-But-One' (ABU)",\
+                       'both':"Combined ABU & AON",\
+                       'both_pct':str(self.confid)+"% confidence intervals for combined method"}
+        xyl = -3, 0
+        inds = self.analysis['disno'].where((np.log10(self.analysis['obj_median'])>=xyl[0]) &\
+                                            (np.log10(self.analysis['removal_median'])>=xyl[0]) &\
+                                            (np.log10(self.analysis['addition_median'])>=xyl[0]), drop=True)
+        ax = plt.subplot(111)
+        ax.set_xscale('log')
+        ax.set_yscale('log')
+        _ = ax.scatter( self.analysis['obj_median'].sel(disno=inds), self.analysis['removal_median'].sel(disno=inds), color=dico_cols['removal'], label=dico_labels['removal'] )
+        _ = ax.scatter( self.analysis['obj_median'].sel(disno=inds), self.analysis['addition_median'].sel(disno=inds), color=dico_cols['addition'], label=dico_labels['addition'] )
+        _ = ax.scatter( self.analysis['obj_median'].sel(disno=inds), self.analysis['both_median'].sel(disno=inds), color=dico_cols['both'], label=dico_labels['both'] )
+        ax.plot( np.logspace(xyl[0], xyl[1], 2), np.logspace(xyl[0], xyl[1], 2), color=dico_cols['obj'], lw=2 )
+        
+        val_xerr = np.array(list(zip((self.analysis['obj_median']-self.analysis['obj_confid_bottom']).sel(disno=inds),\
+                                     (self.analysis['obj_confid_upper']-self.analysis['obj_median']).sel(disno=inds)))).T
+        val_yerr = np.array(list(zip((self.analysis['both_median']-self.analysis['both_confid_bottom']).sel(disno=inds),\
+                                     (self.analysis['both_confid_upper']-self.analysis['both_median']).sel(disno=inds)))).T
+        ax.errorbar(self.analysis['obj_median'].sel(disno=inds), self.analysis['both_median'].sel(disno=inds),\
+                    xerr=val_xerr, yerr=val_yerr, fmt='.', ecolor=dico_cols['both'], alpha=0.5, lw=0.75, zorder=-1000, label=dico_labels['both_pct'])
+        ax.set_xlabel('Total probability (-)', size=18)
+        ax.set_ylabel('Reconstructed probability (-)', size=18)
+        x0, x1 = self.analysis['obj_confid_bottom'].sel(disno='2022-0465-CYP'), self.analysis['obj_confid_upper'].sel(disno='2022-0465-CYP')
+        y0, y1 = self.analysis['both_confid_bottom'].sel(disno='2022-0465-CYP'), self.analysis['both_confid_upper'].sel(disno='2022-0465-CYP')
+        rect = plt.Rectangle( (x0-0.05*(x1-x0),y0-0.05*(y1-y0)), width=1.1*(x1-x0), height=1.1*(x1-x0), zorder=3, alpha=0.5, fill=False, facecolor='white', edgecolor='red', clip_on=False)
+        ax.add_patch(rect)
+        ax.set_xlim(xyl)
+        ax.set_ylim(xyl)
+        ax.legend(loc=0, prop={'size':18})
+        _ = plt.xticks( size=14 )
+        _ = plt.yticks( size=14 )
+        fig.savefig( os.path.join( path_save, 'figure_decomposition.png' ), dpi=300 )
+        fig.savefig( os.path.join( path_save, 'figure_decomposition.pdf' ) )
+#---------------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------
 
 
 
+#---------------------------------------------------------------------------------------------------------------------------
+# QUICK FUNCTION TO SIMPLIFY CODE
+#---------------------------------------------------------------------------------------------------------------------------
+def decadal_contribs(pano, years_lim):
+    # calculating decadal contributions of entities
+    tier1, tier2 = eval_tiers_dGMT(dGMT_OSCAR, np.arange(1850,2022+1))
 
+    # selecting events in period
+    list_disnos = []
+    for disno in pano.contribs_all.event.values:
+        if (years_lim[0] <= results[disno][0].event_year) and (results[disno][0].event_year <= years_lim[1]):
+            list_disnos.append(disno)
+
+    # General information
+    period = str(years_lim[0]) + "-" + str(years_lim[1])
+    print( "Number of events over " + period + ": " + str(len(list_disnos)) )
+    print( "Median I over " + period + ": " + str(pano.contribs_all['values_global_I_median'].sel(event=list_disnos).median('event').values) )
+    print( "Median PR over " + period + ": " + str(pano.contribs_all['values_global_PR_median'].sel(event=list_disnos).median('event').values) )
+
+    # Tier 1
+    val = pano.contribs_all['values_GMT_I_median'].sel(event=list_disnos, entity=tier1).sum('entity').median('event')
+    val_pct = 100 * val / pano.contribs_all['values_global_I_median'].sel(event=list_disnos).median('event')
+    print( "Median contributions of Tier 1 entities to I over " + period + " (degC): " + str(val.values) )
+    print( "Median contributions of Tier 1 entities to I over " + period + " (%): " + str(val_pct.values) )
+
+    # Tier 2
+    val = pano.contribs_all['values_GMT_I_median'].sel(event=list_disnos, entity=tier2).sum('entity').median('event')
+    val_pct = 100 * val / pano.contribs_all['values_global_I_median'].sel(event=list_disnos).median('event')
+    print( "Median contributions of Tier 2 entities to I over " + period + " (degC): " + str(val.values) )
+    print( "Median contributions of Tier 2 entities to I over " + period + " (%): " + str(val_pct.values) )
+#---------------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------
 

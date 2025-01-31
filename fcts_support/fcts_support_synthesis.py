@@ -46,7 +46,8 @@ class synthesis:
         
         # removing those that dont respect the parameters
         self.selection2 = self.selection_parameters(datasets_start=self.selection1)
-        self.select_obs = [dt for dt in self.selection2 if dt in self.obs_products]
+        # correction: always select all observational datasets that are available there
+        self.select_obs = [dt for dt in self.obs_products if dt in self.selection0] # [dt for dt in self.selection2 if dt in self.obs_products]
         self.select_mod = [dt for dt in self.selection2 if dt not in self.obs_products]
 
         # complete if not enough:
@@ -55,10 +56,10 @@ class synthesis:
             # good selection: respect parameters, and 
             self.datasets_postselection = self.select_obs + self.select_mod[:self.n_ESMs_CMIP6]
         else:
-            # issue with selection: not enough satisfying parameters, completing with best ones among remaining ones with good seasonality
+            # issue with selection: not enough models satisfying parameters, completing with best ones among remaining ones with good seasonality
             self.datasets_postselection, n_added = self.selection2.copy(), 0
             for d in self.selection1:
-                if (d not in self.datasets_postselection) and (len(self.select_mod) + n_added < self.n_ESMs_CMIP6):
+                if (d not in self.datasets_postselection) and (len(self.datasets_postselection) - len(self.select_obs) < self.n_ESMs_CMIP6):
                     self.datasets_postselection.append( d )
                     n_added += 1
             
@@ -212,10 +213,12 @@ class synthesis:
     
     def eval_contribs_entities_GMT( self, dGMT_OSCAR, level_OSCAR='mean' ):
         self.contribs_GMT = {}
+        self.probas_GMT = {}
         self.level_OSCAR = level_OSCAR
         for i_data, name_data in enumerate(self.datasets_postselection):
             # preparing dataset
             self.contribs_GMT[name_data] = xr.Dataset()
+            self.probas_GMT[name_data] = xr.Dataset()
 
             # preparing the sum over all entities for handling interaction terms
             if level_OSCAR == 'mean':
@@ -251,16 +254,16 @@ class synthesis:
             tmp = list(self.evt_fits[name_data].probabilities[self.window]['full'].label.values)
             ind_minus = [tmp.index('minus '+entity) for entity in dGMT_OSCAR.entity.values]
             ind_plus = [tmp.index('plus '+entity) for entity in dGMT_OSCAR.entity.values]
-            p_full = self.evt_fits[name_data].probabilities[self.window]['full'].sel(label='with_CC').drop('label')
-            p_fullminusentity = self.evt_fits[name_data].probabilities[self.window]['full'].isel(label=ind_minus).drop('label')
-            p_onlyentity = self.evt_fits[name_data].probabilities[self.window]['full'].isel(label=ind_plus).drop('label')
-            p_noentities = self.evt_fits[name_data].probabilities[self.window]['full'].sel(label='no_entities').drop('label')
-            p_nat = self.evt_fits[name_data].probabilities[self.window]['full'].sel(label='without_CC').drop('label')
+            self.p_full = self.evt_fits[name_data].probabilities[self.window]['full'].sel(label='with_CC').drop('label')
+            self.p_fullminusentity = self.evt_fits[name_data].probabilities[self.window]['full'].isel(label=ind_minus).drop('label')
+            self.p_onlyentity = self.evt_fits[name_data].probabilities[self.window]['full'].isel(label=ind_plus).drop('label')
+            self.p_noentities = self.evt_fits[name_data].probabilities[self.window]['full'].sel(label='no_entities').drop('label')
+            self.p_nat = self.evt_fits[name_data].probabilities[self.window]['full'].sel(label='without_CC').drop('label')
             i_full = self.evt_fits[name_data].intensities[self.window]['full'].sel(label='with_CC').drop('label')
             i_fullminusentity = self.evt_fits[name_data].intensities[self.window]['full'].isel(label=ind_minus).drop('label')
             i_onlyentity = self.evt_fits[name_data].intensities[self.window]['full'].isel(label=ind_plus).drop('label')
             i_noentities = self.evt_fits[name_data].intensities[self.window]['full'].sel(label='no_entities').drop('label')
-            pr_vals = 0.5 * ( (p_full - p_fullminusentity) + (p_onlyentity - p_noentities) ) / p_nat
+            pr_vals = 0.5 * ( (self.p_full - self.p_fullminusentity) + (self.p_onlyentity - self.p_noentities) ) / self.p_nat
             pr_vals = pr_vals.rename( {'label':'entity'} )
             pr_vals.coords['entity'] = dGMT_OSCAR.entity.values
             self.contribs_GMT[name_data]['PR_values'] = pr_vals
@@ -269,6 +272,13 @@ class synthesis:
             i_vals.coords['entity'] = dGMT_OSCAR.entity.values
             self.contribs_GMT[name_data]['I_values'] = i_vals
 
+            # saving probabilities as well
+            self.probas_GMT[name_data]['p_full'] = self.p_full
+            self.probas_GMT[name_data]['p_fullminusentity'] = self.p_fullminusentity
+            self.probas_GMT[name_data]['p_onlyentity'] = self.p_onlyentity
+            self.probas_GMT[name_data]['p_noentities'] = self.p_noentities
+            self.probas_GMT[name_data]['p_nat'] = self.p_nat
+            
             # calculating mean & median
             # blocking very high PR cf WWA approach: only for analysis, plots & interpretation, but not during calculations
             #pr_vals = xr.where( (pr_vals.values > self.limit_PR_WWA), self.limit_PR_WWA, pr_vals )
@@ -313,11 +323,16 @@ class synthesis:
     def synthesis_entities_CO2( self ):
         self.contribs_CO2_synthesis = self.func_synthesis( dict_values=self.contribs_CO2 )
         
-    def synthesis_entities( self, dGMT_OSCAR, emissions_FF, emissions_GCB, level_OSCAR='mean' ):
-        self.eval_contribs_entities_GMT( dGMT_OSCAR, level_OSCAR=level_OSCAR )
-        self.synthesis_entities_GMT()
-        self.eval_contribs_entities_CO2( emissions_FF, emissions_GCB )
-        self.synthesis_entities_CO2()
+    def synthesis_entities( self, dGMT_OSCAR, emissions_FF, emissions_GCB, option_save, path_save, add_text, level_OSCAR='mean' ):
+        if self.evt_id.event_year > dGMT_OSCAR.time.values[-1]:
+            print("No emissions or GMT available for year of event: "+str(self.evt_id.event_year))
+        else:
+            self.eval_contribs_entities_GMT( dGMT_OSCAR, level_OSCAR=level_OSCAR )
+            self.synthesis_entities_GMT()
+            self.eval_contribs_entities_CO2( emissions_FF, emissions_GCB )
+            self.synthesis_entities_CO2()
+            if option_save:
+                self.save_synthesis( path_save, add_text )
     #--------------------------------------------------------------
 
     
@@ -359,17 +374,42 @@ class synthesis:
             return os.path.join(path_save, basis + '_' + info_years + '_' + info_training + '_' + info_sel + '_' + info_OSCAR + '.nc')
         else:
             return os.path.join(path_save, basis + '_' + info_years + '_' + info_training + '_' + info_sel + '_' + info_OSCAR + '_' + add_text + '.nc')
+
+    def name_file_probasGMT(self, path_save, name_data, add_text=None):
+        # checking path
+        path_save = os.path.join(path_save, self.identifier_event)
+        if not os.path.exists(path_save):os.makedirs(path_save)
+            
+        # name of file
+        basis = 'probas-GMT_' + str(self.identifier_event) + '_' + name_data
+        info_years = str(self.training_start_year) + '-' + str(self.training_end_year) + '-w' + self.evt_fits[self.ref].option_train_wo_event*'o' + 'evt'
+        info_training = self.evt_fits[self.ref].weighted_NLL*'weighted' + 'NLL' + '-selected' + self.evt_fits[self.ref].select_BIC_or_NLL
+        if self.n_ESMs_CMIP6 is None:
+            info_sel = 'all-ESMs'
+        else:
+            info_sel = str(self.n_ESMs_CMIP6)+'-ESMs'
+        info_OSCAR = 'OSCAR-'+self.level_OSCAR
+        if (add_text is None) or (add_text == ''):
+            return os.path.join(path_save, basis + '_' + info_years + '_' + info_training + '_' + info_sel + '_' + info_OSCAR + '.nc')
+        else:
+            return os.path.join(path_save, basis + '_' + info_years + '_' + info_training + '_' + info_sel + '_' + info_OSCAR + '_' + add_text + '.nc')
         
     def save_synthesis(self, path_save, add_text=None):
         if self.WARNING_systematic_differences is not None:
             self.contribs_CO2_synthesis.attrs['WARNING_systematic_differences'] = self.WARNING_systematic_differences
             self.contribs_GMT_synthesis.attrs['WARNING_systematic_differences'] = self.WARNING_systematic_differences
-        self.contribs_CO2_synthesis.to_netcdf( self.name_file_CO2(path_save=path_save, add_text=add_text), encoding={var: {"zlib": True} for var in self.contribs_CO2_synthesis.variables} )
-        self.contribs_GMT_synthesis.to_netcdf( self.name_file_GMT(path_save=path_save, add_text=add_text), encoding={var: {"zlib": True} for var in self.contribs_GMT_synthesis.variables} )
+        self.contribs_CO2_synthesis.to_netcdf( self.name_file_CO2(path_save=path_save, add_text=add_text) )#, encoding={var: {"zlib": True} for var in self.contribs_CO2_synthesis.variables} )
+        self.contribs_GMT_synthesis.to_netcdf( self.name_file_GMT(path_save=path_save, add_text=add_text) )#, encoding={var: {"zlib": True} for var in self.contribs_GMT_synthesis.variables} )
+        # saving probabilities as well
+        for i_data, name_data in enumerate(self.datasets_postselection):
+            self.probas_GMT[name_data].to_netcdf( self.name_file_probasGMT(path_save=path_save, name_data=name_data, add_text=add_text) )
         
     def test_load_all(self, path_save, level_OSCAR='mean', add_text=None ):
         self.level_OSCAR = level_OSCAR
-        return os.path.isfile(self.name_file_CO2(path_save=path_save, add_text=add_text)) and os.path.isfile(self.name_file_GMT(path_save=path_save, add_text=add_text))
+        isfile_synthCO2 = os.path.isfile(self.name_file_CO2(path_save=path_save, add_text=add_text))
+        isfile_synthGMT = os.path.isfile(self.name_file_GMT(path_save=path_save, add_text=add_text))
+        isfile_probasGMT = [self.name_file_probasGMT(path_save=path_save, name_data=name_data, add_text=add_text) for name_data in self.datasets_postselection]
+        return isfile_synthCO2 and isfile_synthGMT and np.all(isfile_probasGMT)
         
     def load_synthesis(self, path_save, level_OSCAR='mean', add_text=None):
         self.contribs_CO2_synthesis = xr.open_dataset(self.name_file_CO2(path_save=path_save, add_text=add_text))
@@ -379,6 +419,9 @@ class synthesis:
             self.WARNING_systematic_differences = str(self.contribs_CO2_synthesis.attrs['WARNING_systematic_differences'])
         else:
             self.WARNING_systematic_differences = None
+        self.probas_GMT = {}
+        for name_data in self.datasets_postselection:
+            self.probas_GMT[name_data] = xr.open_dataset(self.name_file_probasGMT(path_save=path_save, name_data=name_data, add_text=add_text))
     #--------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------
@@ -394,11 +437,14 @@ class synthesis:
 class panorama:
     #--------------------------------------------------------------
     # BASIC FUNCTIONS
-    def __init__(self, emissions_FF, dico_ISO2country, dico_country2reg,\
+    def __init__(self, emissions_FF, dico_ISO2country, dico_country2reg, events_excluded, emdat_start_year, emdat_end_year,\
                  n_ESMs_CMIP6, reference, level_OSCAR, training_start_year_obs, training_end_year_CMIP6, option_train_wo_event, select_BIC_or_NLL, weighted_NLL ):
         self.emissions_FF = emissions_FF
         self.dico_ISO2country = dico_ISO2country
         self.dico_country2reg = dico_country2reg
+        self.events_excluded = events_excluded
+        self.emdat_start_year = emdat_start_year
+        self.emdat_end_year = emdat_end_year
         self.n_ESMs_CMIP6 = n_ESMs_CMIP6
         self.reference = reference
         self.level_OSCAR = level_OSCAR
@@ -412,8 +458,8 @@ class panorama:
 
     #--------------------------------------------------------------
     # gathering all values
-    def gather_values( self, results ):
-        self.results = results
+    def gather_values(self, results, dGMT_OSCAR):
+        self.results = {evt:results[evt] for evt in results.keys() if evt not in self.events_excluded}
         
         # prepare dataset
         self.contribs_all = xr.Dataset()
@@ -428,19 +474,25 @@ class panorama:
         # fill in dataset
         for ind_evt in self.results.keys():
             for k in keys:
-                self.contribs_all['values_CO2_'+k].loc[{'event':ind_evt}] = self.results[ind_evt][-1].contribs_CO2_synthesis[k]
-                self.contribs_all['values_GMT_'+k].loc[{'event':ind_evt}] = self.results[ind_evt][-1].contribs_GMT_synthesis[k]
                 self.contribs_all['values_global_'+k].loc[{'event':ind_evt}] = self.results[ind_evt][-1].global_synthesis[k]
+                if (self.results[ind_evt][0].event_year <= dGMT_OSCAR.time.values[-1]):
+                    self.contribs_all['values_CO2_'+k].loc[{'event':ind_evt}] = self.results[ind_evt][-1].contribs_CO2_synthesis[k]
+                    self.contribs_all['values_GMT_'+k].loc[{'event':ind_evt}] = self.results[ind_evt][-1].contribs_GMT_synthesis[k]
+                else:
+                    self.contribs_all['values_CO2_'+k].loc[{'event':ind_evt}] = np.nan
+                    self.contribs_all['values_GMT_'+k].loc[{'event':ind_evt}] = np.nan
 
     # calculate everything
-    def eval_ISOs(self, eval_ISOs_from_results=True, emdat=None, indexes_events=None, geobounds=None, dict_geobounds=None, threshold_SequenceMatcher=None ):
+    def eval_ISOs(self, eval_ISOs_from_results=True, emdat=None, indexes_events=None, geobounds=None, dict_geobounds=None, threshold_SequenceMatcher=0.85 ):
         if eval_ISOs_from_results:
             self.dico_isos = {ind_evt:self.results[ind_evt][0].event_iso[0] for ind_evt in self.results.keys()}
         else:
             self.dico_isos = {}
             for ind_evt in indexes_events:
-                evt_id = treat_event( evt=emdat.sel(index=ind_evt), geobounds=geobounds, dict_geobounds=dict_geobounds, threshold_SequenceMatcher=threshold_SequenceMatcher )
-                self.dico_isos[ind_evt] = evt_id.eval_ISO_panorama()
+                if emdat['DisNo.'].sel(index=ind_evt) not in self.events_excluded:
+                    evt_id = treat_event(evt=emdat.sel(index=ind_evt), geobounds=geobounds, dict_geobounds=dict_geobounds,
+                                         threshold_SequenceMatcher=threshold_SequenceMatcher)
+                    self.dico_isos[ind_evt] = evt_id.eval_ISO_panorama()
     
     def calc(self):
         self.groups_global()
@@ -482,6 +534,7 @@ class panorama:
     # SAVE
     def name_file(self, add_text):
         basis = 'panorama'
+        info_events = str(emdat_start_year)+'-'+str(emdat_end_year)
         info_years = str(self.training_start_year_obs) + '-' + str(self.training_end_year_CMIP6) + '-w' + self.option_train_wo_event*'o' + 'evt'
         info_training = self.weighted_NLL*'weighted' + 'NLL' + '-selected' + self.select_BIC_or_NLL
         info_OSCAR = 'OSCAR-'+self.level_OSCAR
@@ -490,13 +543,13 @@ class panorama:
         else:
             info_sel = str(self.n_ESMs_CMIP6)+'-ESMs'
         if (add_text is None) or (add_text == ''):
-            return basis + '_' + info_years + '_' + info_training + '_' + info_sel + '_' + info_OSCAR + '.nc'
+            return basis + '_' + info_events + '_' + info_years + '_' + info_training + '_' + info_sel + '_' + info_OSCAR + '.nc'
         else:
-            return basis + '_' + info_years + '_' + info_training + '_' + info_sel + '_' + info_OSCAR + '_' + add_text + '.nc'
+            return basis + '_' + info_events + '_' + info_years + '_' + info_training + '_' + info_sel + '_' + info_OSCAR + '_' + add_text + '.nc'
     
     def save_synthesis(self, path_save, add_text=None):
         name_file = self.name_file( add_text=add_text )
-        self.contribs_all.to_netcdf( os.path.join(path_save, name_file), encoding={var: {"zlib": True} for var in self.contribs_all.variables} )
+        self.contribs_all.to_netcdf( os.path.join(path_save, name_file) )#, encoding={var: {"zlib": True} for var in self.contribs_all.variables} )
         
     def load_synthesis(self, path_save, add_text=None):
         name_file = self.name_file( add_text=add_text )

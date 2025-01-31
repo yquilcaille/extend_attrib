@@ -29,12 +29,13 @@ from fcts_support_basic import *
 # SPATIAL INFORMATION
 # Acknowledging: https://github.com/regionmask/regionmask/issues/38
 def sample_coord(coord):
+    # checking if xarray
+    if type(coord) == xr.DataArray:
+        coord = coord.values
+    
     # sample coords for the percentage overlap
-
     d_coord = coord[1] - coord[0]
-
     n_cells = len(coord)
-
     left = coord[0] - d_coord / 2 + d_coord / 20
     right = coord[-1] + d_coord / 2 - d_coord / 20
 
@@ -475,11 +476,12 @@ class treat_event:
                 {'spatial_req':'Northern California',    'spatial_not_req':'Sierra',    'spatial_unless':['New Mexico']} ,\
                 {'spatial_req':'Northern California',    'spatial_not_req':'Trinity',    'spatial_unless':['Texas']} ,\
                 {'spatial_req':'North Carolina',    'spatial_not_req':'South Carolina',    'spatial_unless':['South Carolina']} ,\
+                {'spatial_req':'southern California',    'spatial_not_req':'Orange',    'spatial_unless':['Indiana', 'New York', 'North Carolina', 'Vermont', 'Virginia']} ,\
                 {'spatial_req':'Ohio',       'spatial_not_req':'Ohio',       'spatial_unless':['Kentucky', 'Indiana', 'West Virginia']} ,\
                 {'spatial_req':'Oregon',    'spatial_not_req':'Oregon',    'spatial_unless':['Missouri']} ,\
                 {'spatial_req':'Texas',      'spatial_not_req':'Texas',      'spatial_unless':['Missouri', 'Oklahoma']} ,\
                 {'spatial_req':'Washington',      'spatial_not_req':'Washington',      'spatial_unless':['Alabama', 'Arkansas', 'Colorado', 'Florida', 'Georgia', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky',\
-                                                                                                        'Louisiana', 'Maine', 'Maryland', 'Minnesota', 'Mississippi', 'Missouri', 'Nebraska', 'New York', 'North Carolina', 'Ohio',\
+                                                                                                         'Louisiana', 'Maine', 'Maryland', 'Minnesota', 'Mississippi', 'Missouri', 'Nebraska', 'New York', 'North Carolina', 'Ohio',\
                                                                                                         'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Wisconsin']},\
                 {'spatial_req':'Western Nevada',    'spatial_not_req':'Lyon',    'spatial_unless':['Iowa', 'Kansas', 'Kentucky', 'Minnesota']} ,\
                 {'spatial_req':'Western Nevada',    'spatial_not_req':'Story',    'spatial_unless':['Iowa']} ,\
@@ -766,6 +768,7 @@ class treat_event:
             'zavaska': ['zasavska', 'SVN'],\
             'modesto city (stanislaus, california province)': ['stanislaus', 'USA'],\
             'northern california': ['alameda, alpine, amador, butte, calaveras, colusa, contra costa, del norte, el dorado, fresno, glenn, humboldt, inyo, kings, lake, lassen, madera, marin, mariposa, mendocino, merced, modoc, mono, monterey, napa, nevada, placer, plumas, sacramento, san benito, san francisco, san joaquin, san mateo, santa clara, santa cruz, shasta, sierra, siskiyou, solano, sonoma, stanislaus, sutter, tehama, trinity, tulare, tuolumne, yolo, yuba', 'USA'],\
+            'southern california': ['imperial, kern, los angeles, orange, riverside, san bernardino, san diego, san luis obispo, santa barbara, ventura', 'USA'],\
             'western nevada': ['carson, douglas, lyon, storey, washoe', 'USA'],\
         }
         
@@ -970,7 +973,7 @@ class treat_event:
             cax = fig.add_axes([pos0.x1+0.010, pos0.y0, 0.01, pos0.height])
             cbar = plt.colorbar(pmesh, cax=cax)
             cbar.ax.tick_params(labelsize=0.8*fontsize)
-            cbar.ax.set_xlabel('$\Delta$T ('+u'\u00B0C'+')', size=fontsize)
+            cbar.ax.set_xlabel(r'$\Delta$T ('+u'\u00B0C'+')', size=fontsize)
         return dic_ax_window
     
     def plt_sel( self, ax, fig, obs, ls_event, fontsize ):
@@ -1223,8 +1226,8 @@ class treat_event:
                     t0_tmp = pd.DatetimeIndex([t0]).shift(periods=-7, freq='D')[0]
                     t1_tmp = pd.DatetimeIndex([t1]).shift(periods=7, freq='D')[0]
                 else:
-                    t0_tmp = xr.CFTimeIndex( [t0] ).shift( freq='D', n=-option_full_outputs_extended )[0]
-                    t1_tmp = xr.CFTimeIndex( [t1] ).shift( freq='D', n=option_full_outputs_extended )[0]
+                    t0_tmp = xr.CFTimeIndex( [t0] ).shift( freq='D', periods=-option_full_outputs_extended )[0]
+                    t1_tmp = xr.CFTimeIndex( [t1] ).shift( freq='D', periods=option_full_outputs_extended )[0]
                 t0_large = self.format_date(dict_date={'Year':t0_tmp.year, 'Month':t0_tmp.month, 'Day':t0_tmp.day}, val0=val0)
                 t1_large = self.format_date(dict_date={'Year':t1_tmp.year, 'Month':t1_tmp.month, 'Day':t1_tmp.day}, val0=val0)
                 calc_large = data.sel( time=slice(t0_large,t1_large) )
@@ -1244,8 +1247,8 @@ class treat_event:
             t0_tmp = pd.DatetimeIndex([t0]).shift(periods=-window_value, freq='D')[0]
             t1_tmp = pd.DatetimeIndex([t1]).shift(periods=window_value, freq='D')[0]
         else:
-            t0_tmp = xr.CFTimeIndex( [t0] ).shift( freq='D', n=-window_value )[0]
-            t1_tmp = xr.CFTimeIndex( [t1] ).shift( freq='D', n=window_value )[0]
+            t0_tmp = xr.CFTimeIndex( [t0] ).shift( freq='D', periods=-window_value )[0]
+            t1_tmp = xr.CFTimeIndex( [t1] ).shift( freq='D', periods=window_value )[0]
         t0_large = self.format_date(dict_date={'Year':t0_tmp.year, 'Month':t0_tmp.month, 'Day':t0_tmp.day}, val0=val0)
         t1_large = self.format_date(dict_date={'Year':t1_tmp.year, 'Month':t1_tmp.month, 'Day':t1_tmp.day}, val0=val0)
             
@@ -1409,7 +1412,7 @@ class treat_event:
             OUT.attrs['name_data'] = name_data
             
             # saving dataset
-            OUT.to_netcdf( self.name_file_timeseries(path_save, window, name_data), encoding={var: {"zlib": True} for var in OUT.variables} )
+            OUT.to_netcdf( self.name_file_timeseries(path_save, window, name_data) )#, encoding={var: {"zlib": True} for var in OUT.variables} )
             
     def test_load_all(self, list_data_to_do, path_save ):
         return np.all( [os.path.isfile( self.name_file_timeseries(path_save, window, name_data) ) for name_data in list_data_to_do for window in self.windows] )
