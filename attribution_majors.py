@@ -7,15 +7,6 @@ import xarray as xr
 sys.path.append("fcts_support")
 from fcts_support import *
 
-from fcts_support_basic import *
-from fcts_support_event import *
-from fcts_support_io import *
-from fcts_support_plot_v4 import *
-from fcts_support_treeplot import *
-from fcts_support_synthesis import *
-from fcts_support_training import *
-
-
 
 
 
