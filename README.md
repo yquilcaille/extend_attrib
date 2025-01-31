@@ -46,20 +46,20 @@ System requirements:
 This software has been run on an ETHZ server (64 cores, 1.5 TB RAM, 200 Gbit/s LAN, 64-bit Linux system). In theory, it could run on a laptop, but it has not been tested. The bottleneck would be CMIP6 data, that would represent a lot of storage & RAM. If you decide to work on a laptop and not a server, we would highly recommend going step by step to validate that your machine would be sufficient.
 
 Dependencies:
- - cartopy (0.22.0)
- - cdo (1.6.0)
- - cftime (1.6.2)
- - geopandas (0.13.2)
- - igraph (0.10.4)
- - numpy (1.24.4)
- - openpyxl (3.1.2)
- - pandas (1.5.3)
- - regionmask (0.10.0)
- - scipy (1.11.2)
- - seaborn (0.12.2)
- - shapely (2.0.1)
- - statsmodels (0.14.0)
- - xarray (2023.8.0)
+ - cartopy (0.24.0)
+ - cdo (1.6.1)
+ - cftime (1.6.4)
+ - geopandas (1.0.1)
+ - igraph (0.11.8)
+ - numpy (2.1.2)
+ - openpyxl (3.1.5)
+ - pandas (2.2.3)
+ - regionmask (0.12.1)
+ - scipy (1.14.1)
+ - seaborn (0.13.2)
+ - shapely (2.0.6)
+ - statsmodels (0.14.4)
+ - xarray (2024.7.0)
 For information, the following dependencies will already be installed with Python: copy, csv, difflib, itertools, math, matplotlib, mpl_toolkits, os, sys, time, unicodedata, warnings.
 
 Reproduction instructions for the manuscript "Systematic attribution of heatwaves to the emissions of carbon majors":
