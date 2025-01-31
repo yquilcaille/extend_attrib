@@ -106,7 +106,7 @@ gmt_era5 = values.isel( time=i_yrs_kept ).compute()
 
 # preparation before save
 OUT_ERA5 = xr.Dataset()
-OUT_ERA5['t2m'] = gmt_era5 - 273.15
+OUT_ERA5['t2m'] = gmt_era5# - 273.15 # no need for that anymore
 OUT_ERA5['t2m'].attrs['unit'] = 'degC'
 
 # saving data

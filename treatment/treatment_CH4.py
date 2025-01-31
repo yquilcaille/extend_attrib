@@ -51,13 +51,13 @@ for file in ['CH4-all-1850-1960', 'CH4-all-1970-2014']:
 # creating final data
 OUT_CEDS = xr.Dataset()
 OUT_CEDS['emissions_CH4'] = xr.concat( [data_treated['CH4-all-1850-1960'], data_treated['CH4-all-1970-2014']], dim='time' )
-OUT_CEDS['emissions_CH4'] = OUT['emissions_CH4'].interpolate_na(dim='time', method='linear')
+OUT_CEDS['emissions_CH4'] = OUT_CEDS['emissions_CH4'].interpolate_na(dim='time', method='linear')
 
 # check
 if False:
     plt.scatter( data_treated['CH4-all-1850-1960'].time, data_treated['CH4-all-1850-1960'] )
     plt.plot( data_treated['CH4-all-1970-2014'].time, data_treated['CH4-all-1970-2014'] )
-    plt.plot( OUT.time, OUT['emissions_CH4'], color='k', ls='--' )
+    plt.plot( OUT_CEDS.time, OUT_CEDS['emissions_CH4'], color='k', ls='--' )
     
 # saving
 OUT_CEDS = OUT_CEDS.rename({'time':'year'})
@@ -139,7 +139,7 @@ OUT_Jones2023.to_netcdf( os.path.join(path_Jones023, 'emissions_Jones2023-CH4_18
 
 # check
 if False:
-    plt.plot( OUT.year, OUT['emissions_CH4'], color='k', ls='-', label='CEDS' )
+    plt.plot( OUT_Jones2023.year, OUT_Jones2023['emissions_CH4'], color='k', ls='-', label='CEDS' )
     plt.plot( OUT_Jones2023.year, OUT_Jones2023['emissions_CH4_Fossil']+OUT_Jones2023['emissions_CH4_LULUCF'], color='r', ls='--', label='Jones2023' )
     plt.grid()
     plt.legend(loc=0)

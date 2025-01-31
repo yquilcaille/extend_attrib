@@ -26,7 +26,7 @@ The first script to open is "attribution_majors.py". Here, you will have the ove
  - Defining options for the run: we recommend keeping the preset ones, but you are welcome to try others.
  - Loading data: the different data sources will be loaded using the provided paths (code from "fcts_support_io.py"). It is necessary that you download the required data to run this script. Please check the next section, so that this software may access the data on your machine.
  - Analyzing: we highly recommend not to edit this section. Here, the extreme events will be defined with figures if required (code from "fcts_support_event.py"). Then, conditional distributions will be trained with figures if required (code from "fcts_support_training.py"). Then, the work is extended to the emitters (code from "fcts_support_synthesis.py").
- - Creating outputs: all results are completely synthesized in a so-called panorama (code from "fcts_support_synthesis.py"). Then figures & tables are created (code from "fcts_support_plot_v4.py")
+ - Creating outputs: all results are completely synthesized in a so-called panorama (code from "fcts_support_synthesis.py"). Then figures & tables are created (code from "fcts_support_plot.py")
 Please mind that some scripts have been used to facilitate the work ("treatment*.py").
 Please mind that two shell scripts are also provided ("run*.sh"), for those that have access to a server.
 Any feedback is welcome, to make this code as user-friendly as possible given its technical aspects.
@@ -60,6 +60,7 @@ Dependencies:
  - shapely (2.0.6)
  - statsmodels (0.14.4)
  - xarray (2024.7.0)
+
 For information, the following dependencies will already be installed with Python: copy, csv, difflib, itertools, math, matplotlib, mpl_toolkits, os, sys, time, unicodedata, warnings.
 
 Reproduction instructions for the manuscript "Systematic attribution of heatwaves to the emissions of carbon majors":
