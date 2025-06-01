@@ -148,13 +148,14 @@ class figure_mapevents:
         # Preparation for coords of subaxes
         self.ind_row_bottom, self.ind_row_upper = 2, 0
         self.dico_subplot_evts = {'2021-0390-USA':np.array([self.ind_row_upper, 1]), '2003-0391-FRA':np.array([self.ind_row_upper, 4]),\
-                                  '2010-0206-IND':np.array([self.ind_row_bottom, 1]), '2022-0248-IND':np.array([self.ind_row_bottom, 1]), '2013-0582-CHN':np.array([self.ind_row_bottom, 4])}
+                                  '2010-0206-IND':np.array([self.ind_row_bottom, 1]), '2022-0248-IND':np.array([self.ind_row_bottom, 1]),\
+                                  '2016-0133-IND':np.array([self.ind_row_bottom, 1]),'2013-0582-CHN':np.array([self.ind_row_bottom, 4])}
         self.dico_shifts_subplots = {self.ind_row_bottom:self.shift_subplot_bottom, self.ind_row_upper:self.shift_subplot_upper}
 
         # looping on events to plot
         for ind_evt in self.ind_evts:
             # preparing identification of panel
-            self.letter_panel = list_letters_panels[{'2021-0390-USA':1, '2003-0391-FRA':2, '2010-0206-IND':3, '2022-0248-IND':3, '2013-0582-CHN':4}[ind_evt]]
+            self.letter_panel = list_letters_panels[{'2021-0390-USA':1, '2003-0391-FRA':2, '2010-0206-IND':3, '2022-0248-IND':3, '2016-0133-IND':3, '2013-0582-CHN':4}[ind_evt]]
             
             # preparing event
             self.evt_id, self.evt_fits = deepcopy(self.results[ind_evt][0]), deepcopy(self.results[ind_evt][3]) # [ evt_id, datasets_evt, evt_obs, evt_fits, synth ]
@@ -240,7 +241,7 @@ class figure_mapevents:
         # defining countries
         countries = regionmask.defined_regions.natural_earth_v5_0_0.countries_110
         
-        # preparing grid
+        # preparing grida
         lon = np.arange(-180,180, 0.25)
         lat = np.arange(-90, 90, 0.25)
         mask = countries.mask(lon, lat)
@@ -788,11 +789,13 @@ class figure_panorama:
         for i_period, period in enumerate( [[2000,2009], [2010,2019], [2020,self.emdat_end_year]] ):
             # selecting only the events that are within the period
             ind_evts = self.emdat['DisNo.'].where( (self.emdat['Start Year'] >= period[0]) & (self.emdat['Start Year'] <= period[1]), drop=True )
+            # taking only those kept in panorama, eg discarded because of goodness-of-fit or sum of contributions
+            ind_evts = np.array([i for i in ind_evts.values if i in self.pano.contribs_all.event])
 
             # ploting pano over period
             subax_pano = self.plot_pano(spec_c=self.spec[0,i_period], period=period, i_period=i_period, \
                                         values_main=values_main.sel(event=ind_evts), bounds_main=[1.e0, 1.e1, 1.e2, 1.e3, 1.e4, np.inf],\
-                                        values_suppl=values_suppl.sel(event=ind_evts), bounds_suppl=[0.25, 1.0, 2.0, 3.5],\
+                                        values_suppl=values_suppl.sel(event=ind_evts), bounds_suppl=[0.25, 1.0, 2.0, 3.0],\
                                         units={'main':'', 'suppl':u'\u00B0C'}, list_col_suppl = ['gold', 'darkorange', 'red', 'darkred'], integer_legend=False)
             list_subax_pano.append( subax_pano )
 
@@ -948,20 +951,19 @@ class figure_carbonmajors:
         self.yr_arrow = 2019
         self.x_arrow, self.h_arrow1 = 0.02, 0.0075
         self.y_arrow0, self.y_arrow1, self.yarrow_others = 0.88, 0.050, 0.45
-        self.years_plot = np.arange(1950, 2022+1)
-        self.years_integration = np.arange(1850,2022+1)
-        print("Warning: no emissions from carbon majors available from 2022")
-        self.year_ref = 2022
-        self.space_time_bar, self.width_time_bar = 0.005, 0.03
+        self.years_plot = np.arange(1950, 2023+1)
+        self.years_integration = np.arange(1850, 2023+1)
+        self.year_ref = 2023
+        self.space_time_bar, self.width_time_bar = 0.0075, 0.015
         self.lw_thin_entities = 0.125
 
         # other values
-        self.year_GMT = 2022
+        self.year_GMT = 2023
         self.fontsize = 20
-        self.fontsizes = {'ticks':0.8*self.fontsize, 'entity':0.75*self.fontsize, 'legend':0.9*self.fontsize, 'label':0.8*self.fontsize, 'bar_txt':0.8*self.fontsize, 'title':0.9*self.fontsize,\
-                          'GMT_labels':0.9*self.fontsize, 'GMT_ticks':0.8*self.fontsize, 'GMT_text':1.0*self.fontsize, \
-                          'pano_title':1.0*self.fontsize, 'pano_labels':0.85*self.fontsize, 'pano_axis_labels':0.85*self.fontsize,\
-                          'pano_axis_ticks':0.7*self.fontsize, 'pano_ticks':0.7*self.fontsize, 'pano_axis_ticks':0.7*self.fontsize, 'pano_txt':0.7*self.fontsize, 'pano_legend':0.8*self.fontsize, 'pano_legend_title':0.85*self.fontsize, \
+        self.fontsizes = {'ticks':0.6*self.fontsize, 'entity':0.75*self.fontsize, 'legend':0.625*self.fontsize, 'label':0.8*self.fontsize, 'bar_txt':0.7*self.fontsize, 'title':0.9*self.fontsize,\
+                          'GMT_text':1.0*self.fontsize, \
+                          'pano_title':1.0*self.fontsize, 'pano_labels':0.7*self.fontsize, 'pano_axis_labels':0.7*self.fontsize,\
+                          'pano_axis_ticks':0.6*self.fontsize, 'pano_ticks':0.6*self.fontsize, 'pano_axis_ticks':0.6*self.fontsize, 'pano_txt':0.7*self.fontsize, 'pano_legend':0.8*self.fontsize, 'pano_legend_title':0.85*self.fontsize, \
                           'group_title':1.0*self.fontsize
                          }
         
@@ -972,10 +974,10 @@ class figure_carbonmajors:
         self.vmax_pano_pct = 33 #%
         self.alpha_subplots = 0.75
         self.append_ghost_left = False
-        self.fact_pad_bbox = {'left':0.18, 'right':0.08, 'low':0.78, 'up':0.14}
-        self.width_ratios = [1,1,1]
+        self.fact_pad_bbox = {'left':0.24, 'right':0.08, 'low':0.82, 'up':0.14}
+        self.width_ratios = [1,1,1,1,1]
         self.height_ratios = [1,1, 1,1,1]
-        self.rough_dico_spec_entities = {0:[2,0], 1:[2,1], 2:[2,2], 3:[3,0], 4:[3,1], 5:[3,2], 6:[4,0], 7:[4,1], 8:[4,2]}
+        self.rough_dico_spec_entities = {0:[2,0], 1:[2,1], 2:[2,2], 3:[2,3], 4:[2,4], 5:[3,0], 6:[3,1], 7:[3,2], 8:[3,3], 9:[3,4], 10:[4,0], 11:[4,1], 12:[4,2], 13:[4,3], 14:[4,4]}
     
     def plot( self, path_save, arrow_or_legend='legend' ):
         # define entities to plot
@@ -999,14 +1001,14 @@ class figure_carbonmajors:
         self.add_LUC_GCB = True
         
         # CO2
-        ax = plt.subplot(self.spec[0:1+1,0])
+        ax = plt.subplot(self.spec[0:1+1,0:1+1])
         ax = self.plot_timeseries( ax=ax, variable='cumulative_emissions_CO2', arrow_or_legend=arrow_or_legend, do_2ndlegend=False, letter_panel=list_letters_panels[0])
         pos_new = ax.get_position()
         ax_bis = self.fig.add_axes([pos_new.x1+self.space_time_bar, pos_new.y0, self.width_time_bar, pos_new.height])
         ax_bis = self.plot_bar( ax=ax_bis, variable='cumulative_emissions_CO2' )
 
         # temperatures
-        ax = plt.subplot(self.spec[0:1+1,1])
+        ax = plt.subplot(self.spec[0:1+1,2:3+1])
         ax = self.plot_timeseries( ax=ax, variable='temperatures', arrow_or_legend=arrow_or_legend, do_2ndlegend=True, letter_panel=list_letters_panels[1])
         pos_new = ax.get_position()
         ax_bis = self.fig.add_axes([pos_new.x1+self.space_time_bar, pos_new.y0, self.width_time_bar, pos_new.height])
@@ -1027,8 +1029,8 @@ class figure_carbonmajors:
                                     bounds_suppl=[0., 0.01, 0.05, 0.10, 0.20, 0.40], ticks_suppl=[0., 0.01, 0.05, 0.10, 0.20, 0.40])
             else:
                 ax = self.plot_pano_b(ax_window=ax, entity=entity, values_main=values_main, values_suppl=values_suppl, units={'main':'', 'suppl':u'\u00B0C'}, \
-                                    bounds_main=[1.0, 1.1, 10, 100, 10000, np.inf], bounds_suppl=[0., 0.01, 0.05, 0.10, 0.20, 0.40],\
-                                    list_col_suppl = ['yellow', 'gold', 'darkorange', 'red', 'darkred'], integer_legend=False, do_legend=(i_entity==7))
+                                    bounds_main=[1.0, 1.1, 10, 100, 10000, np.inf], bounds_suppl=[0., 0.01, 0.05, 0.10, 0.20],\
+                                    list_col_suppl = ['yellow', 'darkorange', 'red', 'darkred'], integer_legend=False, do_legend=(i_entity==12)) #['yellow', 'gold', 'darkorange', 'red', 'darkred']
             # labels_main = ['\n$< +10\%$', '$+10\%$\nto\n$+100\%$', '$+100\%$\nto\n$1.10^4$', '\n$> 1.10^4$' ]
             #list_letters_panels[0]
             dico_pos_ax[i_entity] = ax.get_position()
@@ -1044,7 +1046,7 @@ class figure_carbonmajors:
 
         # box around this group
         x_left = dico_pos_ax[0].x0 - self.fact_pad_bbox['left'] * dico_pos_ax[0].width
-        x_right = dico_pos_ax[2].x1 + self.fact_pad_bbox['right'] * dico_pos_ax[0].width
+        x_right = dico_pos_ax[4].x1 + self.fact_pad_bbox['right'] * dico_pos_ax[0].width
         y_top = dico_pos_ax[0].y1 + self.fact_pad_bbox['up'] * dico_pos_ax[0].height
         y_bottom = dico_pos_ax[i_entity].y0 - self.fact_pad_bbox['low'] * dico_pos_ax[0].height
         rect = plt.Rectangle((x_left, y_bottom), x_right-x_left, y_top - y_bottom,\
@@ -1131,7 +1133,7 @@ class figure_carbonmajors:
         if variable in ['emissions_CO2', 'cumulative_emissions_CO2', 'emissions_CH4', 'cumulative_emissions_CH4']:
             # plot data reference
             if variable in ['emissions_CO2', 'cumulative_emissions_CO2']:
-                pp = plt.plot( self.years_plot, values_tot, color=self.dico_cols_bars['GCB'], lw=4, label='GCB 2023' )
+                pp = plt.plot( self.years_plot, values_tot, color=self.dico_cols_bars['GCB'], lw=4, label='Global Carbon Budget 2024' )
             elif variable in ['emissions_CH4', 'cumulative_emissions_CH4']:
                 pp = plt.plot( self.years_plot, values_tot, color=self.dico_cols_bars['Jones2023'], lw=4, label='Jones et al., 2023' )
             plot_1st_legend.append( pp[0] )
@@ -1273,7 +1275,7 @@ class figure_carbonmajors:
         # 2nd legend
         if do_2ndlegend:
             #lgd2 = plt.legend( plot_2nd_legend, [pp.get_label() for pp in plot_2nd_legend], loc='center', bbox_to_anchor=(0.1,-0.07), ncol=4, prop={'size':self.fontsizes['legend']}, frameon=True, markerfirst=False )
-            lgd2 = plt.legend( plot_2nd_legend, [pp.get_label() for pp in plot_2nd_legend], loc='center', bbox_to_anchor=(1.9,0.5), ncol=1, prop={'size':self.fontsizes['legend']}, frameon=True, markerfirst=True )
+            lgd2 = plt.legend( plot_2nd_legend, [pp.get_label() for pp in plot_2nd_legend], loc='center', bbox_to_anchor=(1.4,0.5), ncol=1, prop={'size':self.fontsizes['legend']}, frameon=True, markerfirst=True )
             ax.add_artist(lgd2)
         return ax
 
@@ -1312,7 +1314,7 @@ class figure_carbonmajors:
         
         # bar plot, with an overall bar for all entities tier 1
         ax.set_ylim(self.ylim[0], self.ylim[1])
-        bottom, width_bar, frac_biggest = np.array([0.]), 0.8, 0.25#0.125
+        bottom, width_bar, frac_biggest = np.array([0.]), 0.5, 0.25#0.125
         for val in values:
             if val in ['Remaining', 'Other majors']:
                 _ = ax.bar(x=0, height=values[val] * val_tot, width=width_bar, bottom=bottom, label=val, facecolor=self.dico_cols_bars[val] )
@@ -1337,7 +1339,7 @@ class figure_carbonmajors:
             if True:
                 if val in ['Remaining', 'Other majors', 'Biggest majors']:
                     # adding text in box OUTSIDE BAR:
-                    t = ax.text(x=1.95*0.5*width_bar, y=bottom + 0.5*values[val] * (self.ylim[1]-self.ylim[0]), s=str(int(np.round(100*values[val]))) + '%', fontdict={'size':self.fontsizes['bar_txt']},\
+                    t = ax.text(x=1.95*0.625*width_bar, y=bottom + 0.5*values[val] * (self.ylim[1]-self.ylim[0]), s=str(int(np.round(100*values[val]))) + '%', fontdict={'size':self.fontsizes['bar_txt']},\
                                 verticalalignment='center', horizontalalignment='center', rotation_mode='anchor', bbox={'facecolor':'white', 'alpha':0, 'edgecolor':'white'}, zorder=100)
             else:
                 # adding text in box INSIDE BAR:
@@ -1519,9 +1521,9 @@ class figure_carbonmajors:
             bottom += weight_counts[suppl]
 
         # polishing
-        ax_window.set_xlabel( 'Multiplication of probability due to entity (-)', size=self.fontsizes['pano_labels'] )
+        ax_window.set_xlabel( 'Multiplication of probability\ndue to entity (-)', size=self.fontsizes['pano_labels'] )
         ax_window.set_ylabel( 'Allocation of events (%)', size=self.fontsizes['pano_axis_labels'] )
-        ax_window.set_xticks( ticks=np.arange(len(x_main)), labels=x_main, size=self.fontsizes['pano_axis_ticks'], rotation=-15 )
+        ax_window.set_xticks( ticks=np.arange(len(x_main)), labels=x_main, size=self.fontsizes['pano_axis_ticks'], rotation=-18 )
         #ax_window.set_yticks( ticks=ax_window.get_yticks(), labels=['' for s in ax_window.get_yticks()], size=self.fontsizes['pano_axis_ticks'] )
         if entity in dict_even_shorter_entities:
             lbl = dict_even_shorter_entities[entity]
@@ -1532,8 +1534,8 @@ class figure_carbonmajors:
         ax_window.set_title( '(' + self.dico_panel_entity[entity] + '): ' + lbl, size=self.fontsizes['pano_title'], loc='center', x=0.5, color=self.local_dico_col_entities[entity] )#, fontweight='bold'
         handles, labels = ax_window.get_legend_handles_labels()
         if do_legend:
-            legend = ax_window.legend(handles[::-1], labels[::-1], frameon=True, markerfirst=False, loc='center', bbox_to_anchor=(0.5,-0.6), ncols=len(labels), handletextpad=0.1,\
-                                      title="Change in intensity due to entity", prop={'size':self.fontsizes['pano_legend']}, title_fontsize=self.fontsizes['pano_legend_title'])
+            legend = ax_window.legend(handles, labels, frameon=True, markerfirst=False, loc='center', bbox_to_anchor=(0.5,-0.625), ncols=len(labels), handletextpad=0.1,\
+                                      title="Change in intensity due to entity", prop={'size':self.fontsizes['pano_legend']}, title_fontsize=self.fontsizes['pano_legend_title'])#handles[::-1], labels[::-1]
         return ax_window
     #--------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------
@@ -1873,7 +1875,7 @@ class create_table_all:
     def create( self, path_save, method_calc_entity= 'GMT'):
         # getting confidence interval used everywhere
         disno = list(results.keys())[0]
-        tmp = str(100 * np.round( results[disno][-1].dico_q_confid['confid_upper'] - results[disno][-1].dico_q_confid['confid_bottom'], 5))+'%' # avoiding numerical errors
+        tmp = str(100 * np.round( results[disno][4].dico_q_confid['confid_upper'] - results[disno][4].dico_q_confid['confid_bottom'], 5))+'%' # avoiding numerical errors
         self.range_stats = ['median', 'CI '+tmp]
         self.junction_CI = ' - '
 
@@ -2114,9 +2116,9 @@ class figure_decomposition:
 #---------------------------------------------------------------------------------------------------------------------------
 # QUICK FUNCTION TO SIMPLIFY CODE
 #---------------------------------------------------------------------------------------------------------------------------
-def decadal_contribs(pano, years_lim):
+def decadal_contribs(pano, years_lim, dGMT_OSCAR, confid=95):
     # calculating decadal contributions of entities
-    tier1, tier2 = eval_tiers_dGMT(dGMT_OSCAR, np.arange(1850,2022+1))
+    tier1, tier2 = eval_tiers_dGMT(dGMT_OSCAR, np.arange(1850,2023+1))
 
     # selecting events in period
     list_disnos = []
@@ -2129,6 +2131,9 @@ def decadal_contribs(pano, years_lim):
     print( "Number of events over " + period + ": " + str(len(list_disnos)) )
     print( "Median I over " + period + ": " + str(pano.contribs_all['values_global_I_median'].sel(event=list_disnos).median('event').values) )
     print( "Median PR over " + period + ": " + str(pano.contribs_all['values_global_PR_median'].sel(event=list_disnos).median('event').values) )
+    pr_low = pano.contribs_all['values_global_PR_median'].sel(event=list_disnos).quantile(q=(1-confid/100)/2).values
+    pr_high = pano.contribs_all['values_global_PR_median'].sel(event=list_disnos).quantile(q=1-(1-confid/100)/2).values
+    print( "range PR over " + period + ": " + str(pr_low) + ' - ' + str(pr_high) )
 
     # Tier 1
     val = pano.contribs_all['values_GMT_I_median'].sel(event=list_disnos, entity=tier1).sum('entity').median('event')
@@ -2144,3 +2149,133 @@ def decadal_contribs(pano, years_lim):
 #---------------------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------
 
+
+
+#---------------------------------------------------------------------------------------------------------------------------
+# GOODNESS OF FIT
+#---------------------------------------------------------------------------------------------------------------------------
+def figure_goodness(results, path_save):
+    # preparing data
+    test, discarded = [], []
+    for ii, disno in enumerate(results):
+        if True: # TODO: avoid declaring n
+            list_ds = results[disno][4].datasets_postselection
+            n = 12
+        else:
+            list_ds = results[disno][4].selection0
+            n = 31
+        vals = list(results[disno][5].OUT['goodness'].sel(dataset=list_ds).values)
+        if len(vals) < n:# effect of BEST, add at threshold to preserve test
+            vals.append(0.05)
+        test.append(vals)
+        # check discarded
+        if np.median(results[disno][5].OUT['goodness'].sel(dataset=list_ds).median()) > 0.05:
+            discarded.append(disno)
+    test = np.vstack(test)
+    test[np.where(np.isnan(test))] = 0 # BEST
+    index = np.arange(len(results))
+    index_rep = np.repeat(index[:,np.newaxis], n)
+    
+    def func_plot(ax, data, max_data, ylabel, title, scatter_or_boxplot):
+        c = 'k'
+        if scatter_or_boxplot == "scatter":
+            plt.scatter(index_rep, data, color=c, label='Goodness-of-fit for each event & dataset')
+        elif scatter_or_boxplot == "boxplot":
+            plt.boxplot(positions=index, x=data.T, patch_artist=True,\
+                        boxprops=dict(facecolor=c, color=c), capprops=dict(color=c), whiskerprops=dict(color=c), flierprops=dict(color=c, markeredgecolor=c), medianprops=dict(color=c),\
+                        label='Goodness-of-fit for each event & dataset'
+                       )
+            plt.scatter(index, np.median(data, axis=1), color='purple', lw=4, ls='-', label='Median of goodness-of-fits for each event')
+        else:
+            raise Exception("unknown option")
+        xlim = ax.get_xlim()
+        ylim = ax.get_ylim()
+        label = 'Threshold at ' + {100:'5%', 1:0.05}[max_data]
+        ax.hlines(y=max_data*0.05, xmin=xlim[0]-1, xmax=xlim[1]+1, color='r', lw=5, ls='--', label=label)
+        ax.set_xlabel( "All analyzed heatwaves", size=fontsizes["labels"] )
+        ax.set_ylabel(ylabel, size=fontsizes['labels'] )
+        ax.set_xticks( ticks=ax.get_xticks(), labels=['' for s in ax.get_xticks()] )
+        y = np.linspace(0, max_data, 11)
+        ax.set_yticks( ticks=y, labels=y, size=fontsizes["ticks"] )
+        ax.set_title(title, size=fontsizes["title"], fontweight='bold')
+        ax.set_xlim(0, len(results))
+        ax.set_ylim(0, max_data)
+        ax.legend(loc=0, prop={'size':fontsizes['legend']})
+
+    # plot
+    scatter_or_boxplot = "boxplot"
+    fig = plt.figure(figsize=(21,10))
+    fontsizes = {'title':18, "labels":16, "ticks":14, "legend":16}
+    ax = plt.subplot(1, 1, 1)
+    func_plot(ax=ax, data=100*test, max_data=100, ylabel="Value of test for each dataset (%)", title="Fraction of sample outside confidence band (%)", scatter_or_boxplot=scatter_or_boxplot)
+    fig.savefig( os.path.join( path_save, "figure_test_"+scatter_or_boxplot+".png" ), dpi=300 )
+    fig.savefig( os.path.join( path_save, "figure_test_"+scatter_or_boxplot+".pdf" ) )
+    
+    return test, fig, discarded
+#---------------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------
+
+
+#---------------------------------------------------------------------------------------------------------------------------
+# GRANGER
+#---------------------------------------------------------------------------------------------------------------------------
+def figure_granger(results, events_removed, path_save):
+    # preparing data
+    data_granger, discarded = [], []
+    for ii, disno in enumerate(results):
+        if True: # TODO: avoid declaring n
+            list_ds = results[disno][4].datasets_postselection
+            n = 12
+        else:
+            list_ds = results[disno][4].selection0
+            n = 31
+        vals = list(results[disno][5].OUT['granger'].sel(dataset=list_ds).values)
+        if len(vals) < n:# effect of BEST, add at threshold to preserve test
+            vals.append(0.05)
+        data_granger.append(vals)
+        # check discarded
+        if np.median(results[disno][5].OUT['granger'].sel(dataset=list_ds).median()) > 0.05:
+            discarded.append(disno)
+    data_granger = np.vstack(data_granger)
+    data_granger[np.where(np.isnan(data_granger))] = 0
+    index = np.arange(len(data_granger))
+    index_rep = np.repeat(index[:,np.newaxis], n)
+    
+    def func_plot(ax, data, max_data, ylabel, title, scatter_or_boxplot):
+        c = 'k'
+        if scatter_or_boxplot == "scatter":
+            plt.scatter(index_rep, data, color=c, label='Granger causality for each event & dataset')
+        elif scatter_or_boxplot == "boxplot":
+            plt.boxplot(positions=index, x=data.T, patch_artist=True,\
+                        boxprops=dict(facecolor=c, color=c), capprops=dict(color=c), whiskerprops=dict(color=c), flierprops=dict(color=c, markeredgecolor=c), medianprops=dict(color=c),\
+                        label='Granger causality for each event & dataset'
+                       )
+            plt.scatter(index, np.median(data, axis=1), color='purple', lw=4, ls='-', label='Median of Granger causality for each event')
+        else:
+            raise Exception("unknown option")
+        xlim = ax.get_xlim()
+        ylim = ax.get_ylim()
+        label = 'Threshold at ' + {100:'5%', 1:str(0.05)}[max_data]
+        ax.hlines(y=max_data*0.05, xmin=xlim[0]-1, xmax=xlim[1]+1, color='r', lw=5, ls='--', label=label)
+        ax.set_xlabel( "All analyzed heatwaves", size=fontsizes["labels"] )
+        ax.set_ylabel(ylabel, size=fontsizes['labels'] )
+        ax.set_xticks( ticks=ax.get_xticks(), labels=['' for s in ax.get_xticks()] )
+        ax.set_yticks( ticks=ax.get_yticks(), labels=[np.round(y,1) for y in ax.get_yticks()], size=fontsizes["ticks"] )
+        ax.set_title(title, size=fontsizes["title"], fontweight='bold')
+        ax.set_xlim(0, len(index))
+        ax.set_ylim(0, max_data)
+        ax.legend(loc=0, prop={'size':fontsizes['legend']})
+    
+    
+    # plot
+    scatter_or_boxplot = "boxplot"
+    fig = plt.figure(figsize=(21,10))
+    fontsizes = {'title':18, "labels":16, "ticks":14, "legend":16}
+    ax = plt.subplot(1, 1, 1)
+    func_plot(ax=ax, data=data_granger, max_data=1, ylabel="Value of the test for the Granger causality for each dataset", title="Granger causality for the heatwaves", scatter_or_boxplot=scatter_or_boxplot)
+    fig.savefig( os.path.join( path_save, "figure_granger_"+scatter_or_boxplot+".png" ), dpi=300 )
+    fig.savefig( os.path.join( path_save, "figure_granger_"+scatter_or_boxplot+".pdf" ) )
+    
+    return data_granger, fig, discarded
+#---------------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------

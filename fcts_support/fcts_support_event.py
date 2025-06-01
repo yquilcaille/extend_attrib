@@ -1169,7 +1169,7 @@ class treat_event:
     def select_time( self, data ):
         # some events may last longer than a year. Yet, need to cycle through it. averaging over similar periods every time by looping over years
         
-        if self.check_event_in_obs( data )== False:
+        if self.check_event_in_obs( data ) == False:
             raise Exception('The period of the event is not contained in the provided dataset')
 
         # preparing start & end of selection
@@ -1258,7 +1258,7 @@ class treat_event:
         if calc.time.size == 0:
             return None
         else:
-            rollmean = calc.rolling(time=window_value, center=True).mean()
+            rollmean = calc.rolling(time=window_value, center=True).mean() # takes a super long time if window is too large
 
             # cutting rollmean to initial selection, to avoid out-of-window selection
             rollmean = rollmean.sel( time=slice(t0, t1) )

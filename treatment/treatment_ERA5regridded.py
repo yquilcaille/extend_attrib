@@ -11,8 +11,8 @@ from fcts_support_io import *
 # run in two times: first regridding using bash script on exo, then merge everything into a single file
 # preparing paths
 paths_in = {'ERA5':'/net/exo/landclim/data/dataset/ERA5_deterministic/recent/0.25deg_lat-lon_1h/processed/regrid_tmean1d',\
-            'select_CMIP6':'/landclim/yquilcaille/contributions_FF/select_CMIP6',\
-            'grid_cmip6ng':'/landclim/yquilcaille/contributions_FF/ancillary_data/grids/g025.txt'}
+            'select_CMIP6':'/landclim/yquilcaille/extend_attrib/select_CMIP6',\
+            'grid_cmip6ng':'/landclim/yquilcaille/extend_attrib/ancillary_data/grids/g025.txt'}
 #==================================================================================================
 #==================================================================================================
 

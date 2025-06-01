@@ -7,7 +7,7 @@ import xarray as xr
 
 from fcts_support_io import *
 
-path_GMT = '/net/exo/landclim/yquilcaille/contributions_FF/GMT'
+path_GMT = '/net/exo/landclim/yquilcaille/extend_attrib/GMT'
 
 
 #--------------------------------------------------------------------------------------------------------------------------------------------
