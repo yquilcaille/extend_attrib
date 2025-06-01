@@ -23,7 +23,7 @@ list_experiments_CMIP6 = ['historical','ssp245'] # 1 historical, 1 ssp
 list_members_CMIP6 = ['r1i1p1f1']
 
 # preparing paths
-paths_in = {'select_CMIP6':'/landclim/yquilcaille/contributions_FF/select_CMIP6',\
+paths_in = {'select_CMIP6':'/landclim/yquilcaille/extend_attrib/select_CMIP6',\
             'CMIP6ng':'/net/ch4/data/cmip6-Next_Generation'}
 #==================================================================================================
 #==================================================================================================

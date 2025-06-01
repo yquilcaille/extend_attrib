@@ -11,3 +11,4 @@ from .fcts_support_synthesis import *
 from .fcts_support_taylordiagram import *
 from .fcts_support_training import *
 from .fcts_support_treeplot import *
+from .fcts_support_validition import *

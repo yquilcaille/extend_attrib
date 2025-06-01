@@ -10,13 +10,14 @@ from fcts_support import *
 
 
 
+
 #==================================================================================================
 # 0. OPTIONS
 #==================================================================================================
 # Options for selection of event (EM-DAT)
 disasters = ['Heat wave'] #['Extreme temperature '] #+ ['Drought', 'Wildfire'] + ['Flood'] + ['Storm'] + ['Fog', 'Glacial lake outburst', 'Landslide', 'Oceans']
 emdat_start_year = 2000
-emdat_end_year = 2022
+emdat_end_year = 2023
 
 # Options for training of events
 reference = 'ERA5' # this dataset will be the one used to select the best fit and the probability level of each event for other datasets
@@ -29,13 +30,13 @@ potential_evolutions = {'loc':  ['linear'],\
                        }
 select_BIC_or_NLL = 'BIC'       # BIC, NLL   (default BIC)   : /!\ FORMER axis of sensitivity analysis --> observed that linear_constant_constant is good most of the time (99% of the improvement in BIC is done with linear)
 training_start_year_obs = 1950  # 1920, 1950 (default 1950)  : /!\ FORMER axis of sensitivity analysis when only BEST was used. Now, using ERA5 as reference.
-training_end_year_CMIP6 = 2100  # 2022, 2100 (default 2100)  : /!\ Axis of sensitivity analysis
+training_end_year_CMIP6 = 2100  # 2023, 2100 (default 2100)  : /!\ Axis of sensitivity analysis
 option_train_wo_event = False   # True, False (default False): /!\ Axis of sensitivity analysis  
 weighted_NLL = True             # True, False (default True) : /!\ Axis of sensitivity analysis
 xtol_req = 1.e-9
 
 # Options for figures & results
-option_load_precalc = ['timeserie', 'parameters', 'synthesis'] #['timeserie', 'parameters', 'synthesis'] # if not an empty list, will try to load them. Warning, will prevent plots of time series / tree_results already produced.
+option_load_precalc = ['timeserie', 'parameters', 'synthesis', 'validity'] # if not an empty list, will try to load them. Warning, will prevent plots of time series / tree_results already produced.
 option_save = True # if True, will save time series & fitted parameters.
 option_plot = [] # 'timeserie', 'distributions', 'tree'
 
@@ -52,34 +53,29 @@ list_experiments_CMIP6 = ['historical','ssp245']
 list_members_CMIP6 = ['r1i1p1f1']
 period_comparison_seasons = [1950, 2020]
 
-# Events excluded: when issues were reported.
-events_excluded = ['2022-0465-CYP']
-
 # Options for run on server / else
 run_on_server = False
-option_detailed_prints = False # if True, will print extensive messages. Warning, may overload the console
+option_detailed_prints = True # if True, will print extensive messages. Warning, may overload the console
 
 # Paths related to data
 paths_in = {'BEST':'/net/exo/landclim/data/dataset/Berkeley-Earth-Data_gridded/20141204/1deg_lat-lon_1d/original',\
             'CMIP6':'/net/atmos/data/cmip6',\
             'CMIP6-ng':'/net/ch4/data/cmip6-Next_Generation',\
-            'EMDAT': '/net/exo/landclim/yquilcaille/contributions_FF/EMDAT',\
+            'EMDAT': '/net/exo/landclim/yquilcaille/extend_attrib/EMDAT',\
             'ERA5':'/net/exo/landclim/data/dataset/ERA5_deterministic/recent/0.25deg_lat-lon_1h/processed/regrid_tmean1d',\
-            'FF': '/net/exo/landclim/yquilcaille/contributions_FF/FF',\
-            'GCB': '/net/exo/landclim/yquilcaille/contributions_FF/GCB',\
-            'GeoBoundaries': '/net/exo/landclim/yquilcaille/contributions_FF/GeoBoundaries',\
-            'GMT': '/net/exo/landclim/yquilcaille/contributions_FF/GMT',\
-            'exclusions_CMIP6':'/net/exo/landclim/yquilcaille/contributions_FF/ancillary_data/exclusions_CMIP6',\
-            'select_CMIP6':'/net/exo/landclim/yquilcaille/contributions_FF/select_CMIP6',\
-            'regions_WB':'/net/exo/landclim/yquilcaille/contributions_FF/data_regions',\
-            'Jones2023':'/net/exo/landclim/yquilcaille/contributions_FF/Jones023'
+            'FF': '/net/exo/landclim/yquilcaille/extend_attrib/FF',\
+            'GCB': '/net/exo/landclim/yquilcaille/extend_attrib/GCB',\
+            'GeoBoundaries': '/net/exo/landclim/yquilcaille/extend_attrib/GeoBoundaries',\
+            'GMT': '/net/exo/landclim/yquilcaille/extend_attrib/GMT',\
+            'exclusions_CMIP6':'/net/exo/landclim/yquilcaille/extend_attrib/ancillary_data/exclusions_CMIP6',\
+            'select_CMIP6':'/net/exo/landclim/yquilcaille/extend_attrib/select_CMIP6',\
+            'regions_WB':'/net/exo/landclim/yquilcaille/extend_attrib/data_regions',\
+            'Jones2023':'/net/exo/landclim/yquilcaille/extend_attrib/Jones023'
            }
-paths_out = {'results': '/net/exo/landclim/yquilcaille/contributions_FF/results',\
-             'figures': '/home/yquilcaille/contributions_FF/figures'}
+paths_out = {'results': '/net/exo/landclim/yquilcaille/extend_attrib/results',\
+             'figures': '/home/yquilcaille/extend_attrib/figures'}
 #==================================================================================================
 #==================================================================================================
-
-
 
 
 
@@ -98,12 +94,12 @@ else:
     print('Running whole job')
     
 # 1.2. Preparation of some repositories
-for tmp in ['timeseries', 'training', 'synthesis']:
+for tmp in ['timeseries', 'training', 'synthesis', 'validation']:
     path = os.path.join( paths_out['results'], tmp )
     if not os.path.exists(path):os.makedirs(path)
-for tmp in ['timeseries', 'training', 'synthesis']:
-    paths_out['results_'+tmp] = os.path.join( paths_out['results'], tmp )
-    paths_out['figures_'+tmp] = os.path.join( paths_out['figures'], tmp )
+for tmp in ['timeseries', 'training', 'synthesis', 'validation']:
+    paths_out['results_'+tmp] = os.path.join(paths_out['results'], tmp)
+    paths_out['figures_'+tmp] = os.path.join(paths_out['figures'], tmp)
 for path in paths_out.values():
     if not os.path.exists(path):os.makedirs(path)    
 #==================================================================================================
@@ -121,14 +117,14 @@ emdat, emdat_removed_years = func_prepare_emdat(path=paths_in['EMDAT'], disaster
                                                 option_detailed_prints=option_detailed_prints)
 
 # 2.2. Preparing geographical boundaries
-geobounds, dict_geobounds = func_prepare_geobounds( path=paths_in['GeoBoundaries'], source='gadm', option_detailed_prints=option_detailed_prints )
+geobounds, dict_geobounds = func_prepare_geobounds(path=paths_in['GeoBoundaries'], source='gadm', option_detailed_prints=option_detailed_prints)
 
 # 2.3 Preparing observations: BEST (Important, missing data after 31.07.2022 => cannot attribute 2022 heatwaves using BEST)
-best, gmt_best = func_prepare_BEST( path=paths_in['BEST'], path_gmt=paths_in['GMT'], option_detailed_prints=option_detailed_prints )
+best, gmt_best = func_prepare_BEST(path=paths_in['BEST'], path_gmt=paths_in['GMT'], option_detailed_prints=option_detailed_prints)
 data_to_do = {'BEST':[best['tavg'], gmt_best]}
 
 # 2.4 Preparing observations: ERA5-Land
-era5, gmt_era5 = func_prepare_ERA5( path=paths_in['ERA5'], path_gmt=paths_in['GMT'], option_detailed_prints=option_detailed_prints )
+era5, gmt_era5 = func_prepare_ERA5(path=paths_in['ERA5'], path_gmt=paths_in['GMT'], option_detailed_prints=option_detailed_prints)
 data_to_do['ERA5'] = [era5['t2m'], gmt_era5]
 era5_end_year = gmt_era5['time'].values[-1]
 
@@ -158,27 +154,27 @@ if option_run_CMIP6:
 datasets = [reference] + [key for key in data_to_do.keys() if key!=reference]
 
 # 2.6. Selection of CMIP6 data
-comp_cmip6ng = select_cmip6( path=paths_in['select_CMIP6'], period_seasons=period_comparison_seasons )
+comp_cmip6ng = select_cmip6(path=paths_in['select_CMIP6'], period_seasons=period_comparison_seasons)
 
 # 2.7. Preparing OSCAR data
-dGMT_OSCAR = func_prepare_OSCAR_GMT( path_gmt=paths_in['GMT'], option_detailed_prints=option_detailed_prints )
+dGMT_OSCAR = func_prepare_OSCAR_GMT(path_gmt=paths_in['GMT'], option_detailed_prints=option_detailed_prints)
 
 # 2.8. Preparing FF emissions database
-emissions_FF = xr.open_dataset( os.path.join(paths_in['FF'], 'emissions_majors_1850-2022.nc') )
+emissions_FF = xr.open_dataset(os.path.join(paths_in['FF'], 'emissions_majors_1850-2023.nc'))
 
 # 2.9. Preparing GCB database
-emissions_GCB = func_prepare_GCB( path_gcb=paths_in['GCB'] )
+emissions_GCB = func_prepare_GCB(path_gcb=paths_in['GCB'])
 
 # 2.10. Preparing regions database for synthesis
-dico_ISO2country, dico_country2reg = func_prepare_regions( path_reg=paths_in['regions_WB'] )
+dico_ISO2country, dico_country2reg = func_prepare_regions(path_reg=paths_in['regions_WB'])
 
 # 2.11. Preparing Jones2023 CH4 database
-emissions_Jones023 = xr.open_dataset( os.path.join(paths_in['Jones2023'], 'emissions_Jones2023-CH4_1830-2021.nc') )
+emissions_Jones023 = xr.open_dataset(os.path.join(paths_in['Jones2023'], 'emissions_Jones2023-CH4_1830-2021.nc'))
 
-print('All supporting data loaded.')
-print('')# one line for better readibility
+print('All supporting data loaded.', end='\n')
 #==================================================================================================
 #==================================================================================================
+
 
 
 
@@ -188,7 +184,11 @@ print('')# one line for better readibility
 # 3. ANALYZING EVENT, TRAINING DISTRIBUTIONS, EVALUATING CONTRIBUTIONS
 #==================================================================================================
 if run_on_server:
-    indexes_events = emdat.index.values[ np.arange( int(index_csl*emdat.index.size/nb_csl), np.min([emdat.index.size, int((index_csl+1)*emdat.index.size/nb_csl) + (index_csl==nb_csl-1)]) ) ]
+    tmp = {i:[] for i in range(nb_csl)}
+    for i_evt, evt in enumerate(emdat.index.values):
+        tmp[ i_evt%nb_csl ].append( evt )
+    # take only the events for this one job:
+    indexes_events = tmp[index_csl]
 else:
     indexes_events = emdat.index.values
 
@@ -203,19 +203,19 @@ for i, ind_evt in enumerate(indexes_events):
     evt_obs = {}
     
     # defining event
-    evt_id = treat_event( evt=emdat.sel(index=ind_evt), geobounds=geobounds, dict_geobounds=dict_geobounds, option_detailed_prints=option_detailed_prints )
+    evt_id = treat_event(evt=emdat.sel(index=ind_evt), geobounds=geobounds, dict_geobounds=dict_geobounds, option_detailed_prints=option_detailed_prints)
     
     # identifying ensemble of spatial units within the ISO of interest: need to define region before selecting ESMs
     evt_id.def_spatial_units()
     
     # selection for CMIP6 if necessary
     if option_run_CMIP6:
-        evt_id.select_ESMs_CMIP6( comp_cmip6=comp_cmip6ng, n_ESMs_CMIP6=n_ESMs_CMIP6 )
+        evt_id.select_ESMs_CMIP6(comp_cmip6=comp_cmip6ng, n_ESMs_CMIP6=n_ESMs_CMIP6)
     # will produce ALL CMIP6 ESMs, not just the pre-selection. (alternative: 'datasets[:2] + evt_id.kept_esms', however hinders sensitivity analysis on n_ESMs_CMIP6)
     datasets_evt = datasets
         
     # taking only valid datasets, ie if event is represented by observations
-    datasets_evt = [name_data for name_data in datasets_evt if evt_id.check_event_in_obs( data=data_to_do[name_data][0] )]
+    datasets_evt = [name_data for name_data in datasets_evt if evt_id.check_event_in_obs(data=data_to_do[name_data][0])]
     
     # testing whether need to calculate all required time series
     if ('timeserie' in option_load_precalc) and evt_id.test_load_all(list_data_to_do=datasets_evt, path_save=paths_out['results_timeseries']):
@@ -231,24 +231,24 @@ for i, ind_evt in enumerate(indexes_events):
             # plot & time series
             for name_data in datasets_evt:
                 if evt_id.check_event_in_obs( data=data_to_do[name_data][0] ):
-                    fig_id, evt_obs[name_data] = evt_id.plot_full( obs=data_to_do[name_data][0], path_save=paths_out['figures_timeseries'], name_data=name_data, close_fig=True )
+                    fig_id, evt_obs[name_data] = evt_id.plot_full(obs=data_to_do[name_data][0], path_save=paths_out['figures_timeseries'], name_data=name_data, close_fig=True)
                     
                     # saving for later if needed
                     if option_save:
-                        evt_id.save_timeserie( data_tsr=evt_obs[name_data], name_data=name_data, path_save=paths_out['results_timeseries'] )
+                        evt_id.save_timeserie(data_tsr=evt_obs[name_data], name_data=name_data, path_save=paths_out['results_timeseries'])
     
         else:
             # spatial & temporal average in region of interest for observation
             evt_obs = {}
             for name_data in datasets_evt:
-                if evt_id.check_event_in_obs( data=data_to_do[name_data][0] ):
+                if evt_id.check_event_in_obs(data=data_to_do[name_data][0]):
                     if option_detailed_prints:
                         print('timeseries with ' + name_data)
-                    evt_obs[name_data] = evt_id.create_timeserie( data_to_do[name_data][0], name_data=name_data )
+                    evt_obs[name_data] = evt_id.create_timeserie(data_to_do[name_data][0], name_data=name_data)
     
                     # saving for later if needed
                     if option_save:
-                        evt_id.save_timeserie( data_tsr=evt_obs[name_data], name_data=name_data, path_save=paths_out['results_timeseries'] )
+                        evt_id.save_timeserie(data_tsr=evt_obs[name_data], name_data=name_data, path_save=paths_out['results_timeseries'])
     #------------------------------------------------------------------------------------------
     
     #------------------------------------------------------------------------------------------
@@ -256,7 +256,7 @@ for i, ind_evt in enumerate(indexes_events):
     # keeping track of trained distributions for analysis on each of them, and to use reference for other datasets
     evt_fits = {}
     for name_data in datasets_evt:
-        if evt_id.check_event_in_obs( data=data_to_do[name_data][0] ):
+        if evt_id.check_event_in_obs(data=data_to_do[name_data][0]):
             # preparing period of fit
             training_start_year = {False:1850, True:training_start_year_obs}[name_data in ['BEST', 'ERA5']]
             training_end_year = {False:era5_end_year, True:training_end_year_CMIP6}[name_data not in ['BEST', 'ERA5']]
@@ -293,17 +293,17 @@ for i, ind_evt in enumerate(indexes_events):
                     evt_fits[name_data].save_parameters()
     
             # evolution of parameters for bootstrapped solutions: factual
-            evt_fits[name_data].calc_params_bootstrap( predictor=data_to_do[name_data][1], label='with_CC' )
+            evt_fits[name_data].calc_params_bootstrap(predictor=data_to_do[name_data][1], label='with_CC')
     
             # evolution of parameters for bootstrapped solutions: counterfactual
             if 1850 in data_to_do[name_data][1].time:
                 PI = data_to_do[name_data][1].sel(time=slice(1850,1900)).mean()
             else:
                 PI = data_to_do[name_data][1].sel(time=slice(1961,1990)).mean() - 0.36 # IPCC AR6 Chapter 2, Cross Chapter Box 2.3, Table 1
-            evt_fits[name_data].calc_params_bootstrap( predictor = PI * xr.ones_like( data_to_do[name_data][1]), label='without_CC' )
+            evt_fits[name_data].calc_params_bootstrap( predictor = PI * xr.ones_like(data_to_do[name_data][1]), label='without_CC')
     
             # probas_with_CC, probas_without_CC, attrib_metric
-            evt_fits[name_data].full_calc_probas( evt_obs=evt_obs[name_data] )
+            evt_fits[name_data].full_calc_probas(evt_obs=evt_obs[name_data])
     
             # plot
             if 'distributions' in option_plot:
@@ -311,30 +311,51 @@ for i, ind_evt in enumerate(indexes_events):
     
                 if ('tree' in option_plot) and evt_fits[name_data].plot_trees:
                     for window in evt_fits[name_data].list_windows:
-                        tree = tree_results_fit( results_fit=evt_fits[name_data].results_fits[window], do_empty_nodes=True )
-                        fig = tree.plot(figsize=(1000, 1000), name_save=evt_fits[name_data].name_file_figure_tree(window) )
+                        tree = tree_results_fit(results_fit=evt_fits[name_data].results_fits[window], do_empty_nodes=True)
+                        fig = tree.plot(figsize=(1000, 1000), name_save=evt_fits[name_data].name_file_figure_tree(window))
     #------------------------------------------------------------------------------------------
-    
+
     #------------------------------------------------------------------------------------------
     # 3.3. DEDUCING FOR EACH CARBON MAJOR
-    synth = synthesis( evt_id, evt_obs, evt_fits, data_to_do, training_start_year, training_end_year, option_detailed_prints=option_detailed_prints )
+    synth = synthesis(evt_id, evt_obs, evt_fits, data_to_do, training_start_year, training_end_year, option_detailed_prints=option_detailed_prints)
     if option_run_CMIP6:
         synth.select_datasets(comp_cmip6ng=comp_cmip6ng, n_ESMs_CMIP6=n_ESMs_CMIP6)
         synth.synthesis_global()
-        if ('synthesis' in option_load_precalc) and synth.test_load_all( path_save=paths_out['results_synthesis'], add_text=add_text_files_synthesis, level_OSCAR=level_OSCAR ):
-            synth.load_synthesis( path_save=paths_out['results_synthesis'], add_text=add_text_files_synthesis, level_OSCAR=level_OSCAR )
+        if ('synthesis' in option_load_precalc) and synth.test_load_all(path_save=paths_out['results_synthesis'], add_text=add_text_files_synthesis, level_OSCAR=level_OSCAR):
+            synth.load_synthesis(path_save=paths_out['results_synthesis'], add_text=add_text_files_synthesis, level_OSCAR=level_OSCAR)
         
         else:
             synth.synthesis_entities(dGMT_OSCAR, emissions_FF, emissions_GCB, level_OSCAR=level_OSCAR,\
                                      option_save=option_save, path_save=paths_out['results_synthesis'], add_text=add_text_files_synthesis)
     #------------------------------------------------------------------------------------------
+
+    #------------------------------------------------------------------------------------------
+    # 3.4. VALIDATION: GOODNESS-OF-FIT and GRANGER CAUSALITY
+    valid = func_save_validity(datasets=synth.datasets_postselection, path_save=paths_out['results_validation'],\
+                               identifier_event=evt_id.identifier_event, option_train_wo_event=option_train_wo_event, weighted_NLL=weighted_NLL, select_BIC_or_NLL=select_BIC_or_NLL, n_ESMs_CMIP6=n_ESMs_CMIP6)
+    if ('validity' in option_load_precalc) and valid.test_load():
+        valid.load()
+    else:
+        valid.goodness(obs=evt_obs, evt_fits=evt_fits)
+        valid.granger(gmt_in=data_to_do, treg_in=evt_obs, nonlinear=True)
+        valid.save()
+    #------------------------------------------------------------------------------------------
     
     if run_on_server==False:
-        results[disno] = [ evt_id, datasets_evt, evt_obs, evt_fits, synth ]
+        results[disno] = [evt_id, datasets_evt, evt_obs, evt_fits, synth, valid]
     
     if option_detailed_prints:
         print('Finished with this event in: '+str(int( (ti.time()-time0)/60 ))+'min')
 print('Finished!')
+
+# goodness-of-fit: removing events from all ensuing analysis
+discarded_goodness = ['2003-0250-IND', '2005-0323-IND', '2007-0207-IND', '2009-0175-IND', '2010-0206-IND', '2015-0189-IND', '2017-0144-IND', '2019-0217-IND', '2019-0463-JPN']
+
+# cannot prove causation from a statistical perspective with 95% certainty
+discarded_granger = ['2003-0391-NLD', '2011-0264-USA', '2020-0530-BEL']
+
+# sum of contributions of majors: removing events from analysis on contributions of carbon majors
+discarded_contribs = ['2022-0465-CYP']
 #==================================================================================================
 #==================================================================================================
 
@@ -342,25 +363,19 @@ print('Finished!')
 
 
 
-
-
-
-
-
 #==================================================================================================
-# 4. PANORAMA (ie synthesis on all events & carbon majors)
+# 5. PANORAMA (ie synthesis on all events & carbon majors)
 #==================================================================================================
-if False:
-    pano = panorama(emissions_FF, dico_ISO2country, dico_country2reg, events_excluded, emdat_start_year, emdat_end_year, n_ESMs_CMIP6, reference, level_OSCAR,\
-                    training_start_year_obs, training_end_year_CMIP6, option_train_wo_event, select_BIC_or_NLL, weighted_NLL)
-    if pano.test_load(path_save=paths_out['results_synthesis'], add_text=add_text_files_synthesis):
-        pano.load_synthesis(path_save=paths_out['results_synthesis'], add_text=add_text_files_synthesis)
-        pano.eval_ISOs(eval_ISOs_from_results=False, emdat=emdat, indexes_events=indexes_events, geobounds=geobounds, dict_geobounds=dict_geobounds)
-    else:
-        pano.gather_values(results, dGMT_OSCAR)
-        pano.eval_ISOs(eval_ISOs_from_results=True)
-        pano.save_synthesis(path_save=paths_out['results_synthesis'], add_text=add_text_files_synthesis)
-    pano.calc()
+pano = panorama(emissions_FF, dico_ISO2country, dico_country2reg, discarded_goodness+discarded_contribs+discarded_granger, emdat_start_year, emdat_end_year, n_ESMs_CMIP6, reference, level_OSCAR,\
+                training_start_year_obs, training_end_year_CMIP6, option_train_wo_event, select_BIC_or_NLL, weighted_NLL)
+if pano.test_load(path_save=paths_out['results_synthesis'], add_text=add_text_files_synthesis):
+    pano.load_synthesis(path_save=paths_out['results_synthesis'], add_text=add_text_files_synthesis)
+    pano.eval_ISOs(eval_ISOs_from_results=False, emdat=emdat, indexes_events=indexes_events, geobounds=geobounds, dict_geobounds=dict_geobounds)
+else:
+    pano.gather_values(results, dGMT_OSCAR)
+    pano.eval_ISOs(eval_ISOs_from_results=True)
+    pano.save_synthesis(path_save=paths_out['results_synthesis'], add_text=add_text_files_synthesis)
+pano.calc()
 #==================================================================================================
 #==================================================================================================
 
@@ -368,70 +383,58 @@ if False:
 
 
 
-
-
-
-
-
-
 #==================================================================================================
-# 5. FIGURES & TABLES
+# 6. FIGURES & TABLES
 #==================================================================================================
 #------------------------------------------------------------------------------------------
-# 5.1. FIGURES & TABLES FOR THE MANUSCRIPT
+# 6.1. FIGURES & TABLES FOR THE MANUSCRIPT
 #------------------------------------------------------------------------------------------
 if False:
-    # Figure 1 & S1 (BEST instead of ERA5)
-    tmp_fig = figure_mapevents( results=results, ind_evts=['2021-0390-USA', '2003-0391-FRA', '2022-0248-IND', '2013-0582-CHN'], emdat=emdat, data_to_do=data_to_do, name_data='ERA5')
+    # Figure 1 & S1 (for S1, do BEST instead of ERA5)
+    tmp_fig = figure_mapevents(results=results, ind_evts=['2021-0390-USA', '2003-0391-FRA', '2016-0133-IND', '2013-0582-CHN'], emdat=emdat, data_to_do=data_to_do, name_data='ERA5')
     fig = tmp_fig.plot(path_save=paths_out['figures_synthesis'])
     
-    # Figure 2
-    # careful, excluding events when calculating pano will also remove the event from this figure
+    # Figure 2: accounts for discarded events
     tmp_fig = figure_panorama(emdat=emdat, pano=pano, emdat_start_year=emdat_start_year, emdat_end_year=emdat_end_year)
     fig = tmp_fig.plot(path_save=paths_out['figures_synthesis'])
 
-    # Figure 3
+    # Figure 3: accounts for discarded events
     tmp_fig = figure_carbonmajors(emissions_FF=emissions_FF, emissions_GCB=emissions_GCB, dGMT_OSCAR=dGMT_OSCAR, data_to_do=data_to_do,\
                                   emissions_Jones023=emissions_Jones023, emdat=emdat,\
-                                  entities_plot=['Tier1', 'Abu Dhabi National Oil Company', 'Petrobras'], pano=pano, method_entity='GMT')#'Shell', 
+                                  entities_plot=['Tier1', 'Petrobras'], pano=pano, method_entity='GMT')#'Shell', 
     fig = tmp_fig.plot(path_save=paths_out['figures_synthesis'])
 
-    # Table with all results
-    tmp_tab = create_table_all(emdat, pano, emissions_FF, results, events_excluded )
+    # Table with all results: does not account for discarded events
+    tmp_tab = create_table_all(emdat, pano, emissions_FF, results, discarded_goodness+discarded_contribs+discarded_granger)
     tmp_tab.create(path_save=paths_out['figures_synthesis'])
 #------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------
 
 
-
-
-
-
 #------------------------------------------------------------------------------------------
-# 5.2. ADDITIONAL ANALYSIS
+# 6.2. ADDITIONAL ANALYSIS
 #------------------------------------------------------------------------------------------
 if False:
     # Calculating some numbers for decadal contributions
-    decadal_contribs( pano=pano, years_lim=[2000,2009] )
-    decadal_contribs( pano=pano, years_lim=[2010,2019] )
-    decadal_contribs( pano=pano, years_lim=[2020,2023] )
-    
-    # Figure for Supplementary Information: comparison of reconstructed vs total probability of event
-    tmp_fig = figure_decomposition(results)
-    tmp_fig.plot(path_save=paths_out['figures_synthesis'])
+    decadal_contribs( pano=pano, years_lim=[2000,2009], dGMT_OSCAR=dGMT_OSCAR )
+    decadal_contribs( pano=pano, years_lim=[2010,2019], dGMT_OSCAR=dGMT_OSCAR )
+    decadal_contribs( pano=pano, years_lim=[2020,2023], dGMT_OSCAR=dGMT_OSCAR )
     
     # Table with the details of which data was used for each event: not shown, because way too big
     tmp_tab = create_table_data_evts(results, data_to_do)
     tmp_tab.create(path_save=paths_out['figures_synthesis'])
+
+    # Figure for Supplementary Information: goodness-of-fit --> discarded_goodness
+    test, fig, events_notgoodness = figure_goodness(results=results, path_save=paths_out['figures_synthesis'])
+
+    # Figure for Supplementary Information: Granger causality --> discarded_granger
+    data_granger, fig, events_notgranger = figure_granger(results=results, events_removed=discarded_goodness, path_save=paths_out['figures_synthesis'])
+
+    # Figure for Supplementary Information: comparison of reconstructed vs total probability of event --> discarded_contribs
+    tmp_fig = figure_decomposition(results) # ---> discarded_contribs
+    tmp_fig.plot(path_save=paths_out['figures_synthesis'])
 #------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------
 #==================================================================================================
 #==================================================================================================
-
-
-
-
-
-
-
 

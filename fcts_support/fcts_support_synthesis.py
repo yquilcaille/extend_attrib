@@ -127,8 +127,8 @@ class synthesis:
         stat_test = ss.chisquare( f_obs=np.hstack(values) ).statistic / (len(self.datasets_postselection) - 1)
         if stat_test > 1:
             self.WARNING_systematic_differences = "WARNING: Systematic differences among models contribute significantly! Propagating uncertainty through sqrt(chi2/dof)!"
-            if self.option_detailed_prints:
-                print(self.WARNING_systematic_differences)
+            #if self.option_detailed_prints:
+                #print(self.WARNING_systematic_differences)
             self.factor_model_uncertainty = np.sqrt( stat_test )
         else:
             self.WARNING_systematic_differences = None
@@ -398,8 +398,8 @@ class synthesis:
         if self.WARNING_systematic_differences is not None:
             self.contribs_CO2_synthesis.attrs['WARNING_systematic_differences'] = self.WARNING_systematic_differences
             self.contribs_GMT_synthesis.attrs['WARNING_systematic_differences'] = self.WARNING_systematic_differences
-        self.contribs_CO2_synthesis.to_netcdf( self.name_file_CO2(path_save=path_save, add_text=add_text) )#, encoding={var: {"zlib": True} for var in self.contribs_CO2_synthesis.variables} )
-        self.contribs_GMT_synthesis.to_netcdf( self.name_file_GMT(path_save=path_save, add_text=add_text) )#, encoding={var: {"zlib": True} for var in self.contribs_GMT_synthesis.variables} )
+        self.contribs_CO2_synthesis.to_netcdf( self.name_file_CO2(path_save=path_save, add_text=add_text) )
+        self.contribs_GMT_synthesis.to_netcdf( self.name_file_GMT(path_save=path_save, add_text=add_text) )
         # saving probabilities as well
         for i_data, name_data in enumerate(self.datasets_postselection):
             self.probas_GMT[name_data].to_netcdf( self.name_file_probasGMT(path_save=path_save, name_data=name_data, add_text=add_text) )
@@ -474,10 +474,10 @@ class panorama:
         # fill in dataset
         for ind_evt in self.results.keys():
             for k in keys:
-                self.contribs_all['values_global_'+k].loc[{'event':ind_evt}] = self.results[ind_evt][-1].global_synthesis[k]
+                self.contribs_all['values_global_'+k].loc[{'event':ind_evt}] = self.results[ind_evt][4].global_synthesis[k]
                 if (self.results[ind_evt][0].event_year <= dGMT_OSCAR.time.values[-1]):
-                    self.contribs_all['values_CO2_'+k].loc[{'event':ind_evt}] = self.results[ind_evt][-1].contribs_CO2_synthesis[k]
-                    self.contribs_all['values_GMT_'+k].loc[{'event':ind_evt}] = self.results[ind_evt][-1].contribs_GMT_synthesis[k]
+                    self.contribs_all['values_CO2_'+k].loc[{'event':ind_evt}] = self.results[ind_evt][4].contribs_CO2_synthesis[k]
+                    self.contribs_all['values_GMT_'+k].loc[{'event':ind_evt}] = self.results[ind_evt][4].contribs_GMT_synthesis[k]
                 else:
                     self.contribs_all['values_CO2_'+k].loc[{'event':ind_evt}] = np.nan
                     self.contribs_all['values_GMT_'+k].loc[{'event':ind_evt}] = np.nan
@@ -534,7 +534,7 @@ class panorama:
     # SAVE
     def name_file(self, add_text):
         basis = 'panorama'
-        info_events = str(emdat_start_year)+'-'+str(emdat_end_year)
+        info_events = str(self.emdat_start_year)+'-'+str(self.emdat_end_year)
         info_years = str(self.training_start_year_obs) + '-' + str(self.training_end_year_CMIP6) + '-w' + self.option_train_wo_event*'o' + 'evt'
         info_training = self.weighted_NLL*'weighted' + 'NLL' + '-selected' + self.select_BIC_or_NLL
         info_OSCAR = 'OSCAR-'+self.level_OSCAR

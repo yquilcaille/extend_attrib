@@ -24,7 +24,9 @@ def func_prepare_emdat( path, disasters, start_year, end_year, option_detailed_p
         print('Loading EM-DAT')
     
     # finding correct file:
-    files = [file for file in os.listdir( path ) if file[-5:]=='.xlsx']
+    files = [file for file in os.listdir(path) if file[-5:]=='.xlsx']
+    if len(files) > 1:
+        print("Warning: multiple files in EM-DAT repository, selecting the first one.")
     
     # loading emdat
     with warnings.catch_warnings():
@@ -1026,7 +1028,9 @@ def func_prepare_OSCAR_GMT( path_gmt, option_detailed_prints=False ):
 def func_prepare_GCB( path_gcb ):
     # preparing values
     #data = pd.read_excel( os.path.join(path_gcb, 'Global_Carbon_Budget_2022v1.0.xlsx'), sheet_name='Historical Budget' )
-    data = pd.read_excel( os.path.join(path_gcb, 'Global_Carbon_Budget_2023v1.0.xlsx'), sheet_name='Historical Budget' )
+    #data = pd.read_excel( os.path.join(path_gcb, 'Global_Carbon_Budget_2023v1.0.xlsx'), sheet_name='Historical Budget' )
+    data = pd.read_excel( os.path.join(path_gcb, 'Global_Carbon_Budget_2024_v1.02.xlsx'), sheet_name='Historical Budget' )
+    
     dd = np.array( data.values )
     ind_min = np.where( dd == 'Year' )[0][0]
 

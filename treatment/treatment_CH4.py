@@ -8,14 +8,14 @@ import xarray as xr
 #----------------------------------------------------------------------------------------------------------
 # OPTIONS TREATMENT
 #----------------------------------------------------------------------------------------------------------
-path_CEDS = '/net/exo/landclim/yquilcaille/contributions_FF/CEDS'
+path_CEDS = '/net/exo/landclim/yquilcaille/extend_attrib/CEDS'
 name_files = {'CH4-air-1970-2014': 'CH4-em-AIR-anthro_input4MIPs_emissions_CMIP_CEDS-2017-08-30_gn_197001-201412.nc',\
               'CH4-air-1850-1960': 'CH4-em-AIR-anthro_input4MIPs_emissions_CMIP_CEDS-2017-08-30-supplemental-data_gn_185001-196012.nc',\
               'CH4-all-1970-2014': 'CH4-em-anthro_input4MIPs_emissions_CMIP_CEDS-2017-05-18_gn_197001-201412.nc',\
               'CH4-all-1850-1960': 'CH4-em-anthro_input4MIPs_emissions_CMIP_CEDS-2017-05-18-supplemental-data_gn_185001-196012.nc',\
               'CH4-bio-1970-2014': 'CH4-em-SOLID-BIOFUEL-anthro_input4MIPs_emissions_CMIP_CEDS-2017-05-18-supplemental-data_gn_197001-201412.nc'}
 
-path_Jones023 = '/net/exo/landclim/yquilcaille/contributions_FF/Jones023'
+path_Jones023 = '/net/exo/landclim/yquilcaille/extend_attrib/Jones023'
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
 
