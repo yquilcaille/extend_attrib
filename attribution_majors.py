@@ -239,16 +239,14 @@ for i, ind_evt in enumerate(indexes_events):
     
         else:
             # spatial & temporal average in region of interest for observation
-            evt_obs = {}
             for name_data in datasets_evt:
-                if evt_id.check_event_in_obs(data=data_to_do[name_data][0]):
-                    if option_detailed_prints:
-                        print('timeseries with ' + name_data)
-                    evt_obs[name_data] = evt_id.create_timeserie(data_to_do[name_data][0], name_data=name_data)
-    
-                    # saving for later if needed
-                    if option_save:
-                        evt_id.save_timeserie(data_tsr=evt_obs[name_data], name_data=name_data, path_save=paths_out['results_timeseries'])
+                if option_detailed_prints:
+                    print('timeseries with ' + name_data)
+                evt_obs[name_data] = evt_id.create_timeserie(data_to_do[name_data][0], name_data=name_data)
+
+                # saving for later if needed
+                if option_save:
+                    evt_id.save_timeserie(data_tsr=evt_obs[name_data], name_data=name_data, path_save=paths_out['results_timeseries'])
     #------------------------------------------------------------------------------------------
     
     #------------------------------------------------------------------------------------------
@@ -256,63 +254,62 @@ for i, ind_evt in enumerate(indexes_events):
     # keeping track of trained distributions for analysis on each of them, and to use reference for other datasets
     evt_fits = {}
     for name_data in datasets_evt:
-        if evt_id.check_event_in_obs(data=data_to_do[name_data][0]):
-            # preparing period of fit
-            training_start_year = {False:1850, True:training_start_year_obs}[name_data in ['BEST', 'ERA5']]
-            training_end_year = {False:era5_end_year, True:training_end_year_CMIP6}[name_data not in ['BEST', 'ERA5']]
-    
-            # preparing evt_fit
-            evt_fits[name_data] = train_distribs(data_gmt=data_to_do[name_data][1], data_obs=evt_obs[name_data], event_year=evt_id.event_year, identifier_event=evt_id.identifier_event,\
-                                                 name_data=name_data, name_reference=reference, training_start_year=training_start_year, training_end_year=training_end_year, \
-                                                 potential_evolutions=potential_evolutions, potential_distributions=potential_distributions,xtol_req=xtol_req,\
-                                                 weighted_NLL=weighted_NLL, select_BIC_or_NLL=select_BIC_or_NLL, option_train_wo_event=option_train_wo_event, n_iterations_BS=1000,\
-                                                 path_results=paths_out['results_training'], path_figures=paths_out['figures_training'], option_detailed_prints=option_detailed_prints)
-    
-            if name_data != reference:
-                # using calculations on reference to restrain the set of configurations & pass probability levels at time of event
-                evt_fits[name_data].learn_from_ref( ref=evt_fits[reference] )
-    
-            if ('parameters' in option_load_precalc) and evt_fits[name_data].test_load_all():
-                # loading them all
-                if option_detailed_prints:
-                    print('Loading existing parameters for event with '+name_data)
-                evt_fits[name_data].load_parameters()
-    
-            else:
-                # train a set of configurations (large on reference, 1 otherwise)
-                evt_fits[name_data].fit_all()
-    
-                # select best one, based on its BIC  or  NLL
-                evt_fits[name_data].select_best_fit()
-    
-                # bootstrapping the best solution
-                evt_fits[name_data].bootstrap_best_fit()# with 1000, average seems to be varying by 1% with tests
-    
-                # saving for later if needed
-                if option_save:
-                    evt_fits[name_data].save_parameters()
-    
-            # evolution of parameters for bootstrapped solutions: factual
-            evt_fits[name_data].calc_params_bootstrap(predictor=data_to_do[name_data][1], label='with_CC')
-    
-            # evolution of parameters for bootstrapped solutions: counterfactual
-            if 1850 in data_to_do[name_data][1].time:
-                PI = data_to_do[name_data][1].sel(time=slice(1850,1900)).mean()
-            else:
-                PI = data_to_do[name_data][1].sel(time=slice(1961,1990)).mean() - 0.36 # IPCC AR6 Chapter 2, Cross Chapter Box 2.3, Table 1
-            evt_fits[name_data].calc_params_bootstrap( predictor = PI * xr.ones_like(data_to_do[name_data][1]), label='without_CC')
-    
-            # probas_with_CC, probas_without_CC, attrib_metric
-            evt_fits[name_data].full_calc_probas(evt_obs=evt_obs[name_data])
-    
-            # plot
-            if 'distributions' in option_plot:
-                fig_fit = evt_fits[name_data].plot_full( plot_start_year=1950, close_fig=True )
-    
-                if ('tree' in option_plot) and evt_fits[name_data].plot_trees:
-                    for window in evt_fits[name_data].list_windows:
-                        tree = tree_results_fit(results_fit=evt_fits[name_data].results_fits[window], do_empty_nodes=True)
-                        fig = tree.plot(figsize=(1000, 1000), name_save=evt_fits[name_data].name_file_figure_tree(window))
+        # preparing period of fit
+        training_start_year = {False:1850, True:training_start_year_obs}[name_data in ['BEST', 'ERA5']]
+        training_end_year = {False:era5_end_year, True:training_end_year_CMIP6}[name_data not in ['BEST', 'ERA5']]
+
+        # preparing evt_fit
+        evt_fits[name_data] = train_distribs(data_gmt=data_to_do[name_data][1], data_obs=evt_obs[name_data], event_year=evt_id.event_year, identifier_event=evt_id.identifier_event,\
+                                             name_data=name_data, name_reference=reference, training_start_year=training_start_year, training_end_year=training_end_year, \
+                                             potential_evolutions=potential_evolutions, potential_distributions=potential_distributions,xtol_req=xtol_req,\
+                                             weighted_NLL=weighted_NLL, select_BIC_or_NLL=select_BIC_or_NLL, option_train_wo_event=option_train_wo_event, n_iterations_BS=1000,\
+                                             path_results=paths_out['results_training'], path_figures=paths_out['figures_training'], option_detailed_prints=option_detailed_prints)
+
+        if name_data != reference:
+            # using calculations on reference to restrain the set of configurations & pass probability levels at time of event
+            evt_fits[name_data].learn_from_ref( ref=evt_fits[reference] )
+
+        if ('parameters' in option_load_precalc) and evt_fits[name_data].test_load_all():
+            # loading them all
+            if option_detailed_prints:
+                print('Loading existing parameters for event with '+name_data)
+            evt_fits[name_data].load_parameters()
+
+        else:
+            # train a set of configurations (large on reference, 1 otherwise)
+            evt_fits[name_data].fit_all()
+
+            # select best one, based on its BIC  or  NLL
+            evt_fits[name_data].select_best_fit()
+
+            # bootstrapping the best solution
+            evt_fits[name_data].bootstrap_best_fit()# with 1000, average seems to be varying by 1% with tests
+
+            # saving for later if needed
+            if option_save:
+                evt_fits[name_data].save_parameters()
+
+        # evolution of parameters for bootstrapped solutions: factual
+        evt_fits[name_data].calc_params_bootstrap(predictor=data_to_do[name_data][1], label='with_CC')
+
+        # evolution of parameters for bootstrapped solutions: counterfactual
+        if 1850 in data_to_do[name_data][1].time:
+            PI = data_to_do[name_data][1].sel(time=slice(1850,1900)).mean()
+        else:
+            PI = data_to_do[name_data][1].sel(time=slice(1961,1990)).mean() - 0.36 # IPCC AR6 Chapter 2, Cross Chapter Box 2.3, Table 1
+        evt_fits[name_data].calc_params_bootstrap( predictor = PI * xr.ones_like(data_to_do[name_data][1]), label='without_CC')
+
+        # probas_with_CC, probas_without_CC, attrib_metric
+        evt_fits[name_data].full_calc_probas(evt_obs=evt_obs[name_data])
+
+        # plot
+        if 'distributions' in option_plot:
+            fig_fit = evt_fits[name_data].plot_full( plot_start_year=1950, close_fig=True )
+
+            if ('tree' in option_plot) and evt_fits[name_data].plot_trees:
+                for window in evt_fits[name_data].list_windows:
+                    tree = tree_results_fit(results_fit=evt_fits[name_data].results_fits[window], do_empty_nodes=True)
+                    fig = tree.plot(figsize=(1000, 1000), name_save=evt_fits[name_data].name_file_figure_tree(window))
     #------------------------------------------------------------------------------------------
 
     #------------------------------------------------------------------------------------------
@@ -423,6 +420,10 @@ if False:
     # Table with the details of which data was used for each event: not shown, because way too big
     tmp_tab = create_table_data_evts(results, data_to_do)
     tmp_tab.create(path_save=paths_out['figures_synthesis'])
+
+    # Figure QQ-plot, example with 2021-0390-USA over ERA5 
+    results['2021-0390-USA'][5].goodness(obs=results['2021-0390-USA'][2], evt_fits=results['2021-0390-USA'][3])
+    results['2021-0390-USA'][5].perf_fit['ERA5'].qq_plot(path_save=paths_out['figures_synthesis'])
 
     # Figure for Supplementary Information: goodness-of-fit --> discarded_goodness
     test, fig, events_notgoodness = figure_goodness(results=results, path_save=paths_out['figures_synthesis'])
