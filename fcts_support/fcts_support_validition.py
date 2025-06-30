@@ -21,13 +21,13 @@ class analysis_distrib:
             raise Exception("should have only one window")
         window = list(obs.keys())[0]
         self.obs = obs[window]
-        self.params = params[window].sel(label='with_CC', time=self.obs['time'])
+        self.params = params[window]
 
         # BASIC APPROACH: transforming sample onto a GEV(0,0,shape)
-        self.sample_transf = (self.obs - self.params['loc']) / self.params['scale']
+        self.sample_transf = ((self.obs - self.params['loc']) / self.params['scale']).sel(label='with_CC')
         self.sample_cdf = self.cdf_from_sample(self.sample_transf.values, axis=self.sample_transf.dims.index('time'))
         self.confid_sample_cdf = np.percentile(self.sample_cdf[0], q=np.array([2.5,50,97.5]), axis=self.sample_transf.dims.index('bootstrap'))
-        self.theoretical_quantiles = ss.genextreme.ppf(self.sample_cdf[1], c=-self.params['shape'])
+        self.theoretical_quantiles = ss.genextreme.ppf(self.sample_cdf[1], c=-self.params['shape'].sel(label='with_CC', time=self.sample_transf.time))
         self.confid_theoretical_quantiles = np.percentile(self.theoretical_quantiles, q=np.array([2.5,50,97.5]), axis=0)
         # self.qq_plot()
         # counting where the sample is not within the range of the theoretical quantiles
@@ -36,23 +36,13 @@ class analysis_distrib:
         count_qq_upper = count_qq[np.where( count_qq > self.ind_median )]
         self.frac_qq = len(count_qq) / len(self.confid_theoretical_quantiles[0])
         self.frac_qq_upper = len(count_qq_upper) / len(self.confid_theoretical_quantiles[0])
-
-        # DIFFERENT APPROACH: probability integral transform onto a N(0,1)
-        cdf_obs = ss.genextreme.cdf(x=self.obs, loc=self.params['loc'], scale=self.params['scale'], c=-self.params['shape'])
-        norm_ppf_obs = ss.norm.ppf(q=cdf_obs, loc=0, scale=1)
-        test_shapiro = ss.shapiro(norm_ppf_obs, axis=1)
-        count_test = np.where(test_shapiro[1]<0.05)[0]
-        self.frac_shapiro = len(count_test) / len(test_shapiro[1])
-        test_anderson = np.array([ss.anderson(x=norm_ppf_obs[i,:], dist='norm').fit_result.success for i in np.arange(norm_ppf_obs.shape[0])])
-        count_test = np.where(~test_anderson)[0]
-        self.frac_anderson = len(count_test) / len(test_anderson)
     
     def cdf_from_sample(self, data, axis):
         x, counts = np.unique(data, return_counts=True, axis=axis)
         cusum = np.cumsum(counts)
         return x, cusum / cusum[-1]
 
-    def qq_plot(self):
+    def qq_plot(self, path_save):
         fig = plt.figure(figsize=(10,10))
         # id line
         plt.plot( self.confid_theoretical_quantiles[1], self.confid_theoretical_quantiles[1], lw=2, color='black', label="Identity line" )
@@ -64,6 +54,8 @@ class analysis_distrib:
         plt.xlabel('Theoretical quantile', size=14)
         plt.ylabel('Quantile of sample', size=14)
         plt.legend(loc=0, prop={'size':14})
+        fig.savefig( os.path.join( path_save, 'qqplot.jpg' ), dpi=450 )
+        fig.savefig( os.path.join( path_save, 'qqplot.pdf' ) )
         return fig
 #---------------------------------------------------------------------------------------------------------------------------
 
@@ -230,9 +222,10 @@ class func_save_validity:
         self.full_path_save = os.path.join(self.path_save, basis + '_' + info_years + '_' + info_training + '_' + info_sel + '.nc')
             
     def goodness(self, obs, evt_fits):
+        self.perf_fit = {} # keeping this as variable to allow QQ-plot by users
         for name_data in self.datasets:
-            perf_fit = analysis_distrib(obs=obs[name_data], params=evt_fits[name_data].parameters)
-            self.OUT['goodness'].loc[{'dataset':name_data}] = perf_fit.frac_qq_upper
+            self.perf_fit[name_data] = analysis_distrib(obs=obs[name_data], params=evt_fits[name_data].parameters)
+            self.OUT['goodness'].loc[{'dataset':name_data}] = self.perf_fit[name_data].frac_qq_upper
         # check
         if self.OUT['goodness'].median() > 0.05:
             print("Will need to discard " + self.identifier_event + " due to insufficient goodness-of-fit")

@@ -229,7 +229,7 @@ class figure_mapevents:
                                 bbox={'boxstyle':'round', 'facecolor':self.dico_cols['letter_panel_face'], 'edgecolor':self.dico_cols['letter_panel_edge'], 'alpha':1})
 
         # save
-        self.fig.savefig( os.path.join( path_save, 'figure_mapevents.png' ), dpi=300 )
+        self.fig.savefig( os.path.join( path_save, 'figure_mapevents.jpg' ), dpi=450 )
         self.fig.savefig( os.path.join( path_save, 'figure_mapevents.pdf' ) )
         return self.fig
     #--------------------------------------------------------------
@@ -258,7 +258,7 @@ class figure_mapevents:
             c = 0.995
             ticks_cbar = [(0,(1.0*c,1.0*c,1.0*c)), (0.5/15,(0.90*c,0.90*c,0.90*c)), (1/15,(0.8*c,0.8*c,0.8*c)), (3.5/15,(0.5*c,0.5*c,0.5*c)), (15/15,(0.0*c,0.0*c,0.0*c))]
         else:
-            levels_map = [-0.5, 0.5, 2.5, 4.5, 6.5, 8.5, 10.5, 15.5]
+            levels_map = [-0.5, 0.5, 2.5, 4.5, 6.5, 8.5, 10.5, 16.5]
             levels_cbar = [0, 1.5, 3.5, 5.5, 7.5, 9.5, 13]
             text_cbar = ['0', '1-2', '3-4', '5-6', '7-8', '9-10', '11+']
             c0, c1, c2 = np.array([248/255, 248/255, 254/255]), np.array([125/255, 100/255, 227/255]), np.array([118/255, 27/255, 122/255])
@@ -808,7 +808,7 @@ class figure_panorama:
             subax_pano.set_yticks( ticks=ticks, labels=ticks, size=self.fontsizes['pano_axis_ticks'] )
             
         # save
-        self.fig.savefig( os.path.join( path_save, 'figure_panorama.png' ), dpi=300 )
+        self.fig.savefig( os.path.join( path_save, 'figure_panorama.jpg' ), dpi=450 )
         self.fig.savefig( os.path.join( path_save, 'figure_panorama.pdf' ) )
         return self.fig
     #--------------------------------------------------------------
@@ -1058,7 +1058,7 @@ class figure_carbonmajors:
                           fontdict={'size':self.fontsizes['group_title'], 'weight':'bold'}, verticalalignment='center', horizontalalignment='center', rotation_mode='anchor', bbox={'facecolor':'white', 'alpha':0, 'edgecolor':'white'})
         
         # save
-        self.fig.savefig( os.path.join( path_save, 'figure_carbonmajors-'+self.method_entity+'.png' ), dpi=300 )
+        self.fig.savefig( os.path.join( path_save, 'figure_carbonmajors-'+self.method_entity+'.jpg' ), dpi=450 )
         self.fig.savefig( os.path.join( path_save, 'figure_carbonmajors-'+self.method_entity+'.pdf' ) )
         return self.fig
     #--------------------------------------------------------------
@@ -1221,7 +1221,7 @@ class figure_carbonmajors:
                 plot_2nd_legend.append( pp )
             else:
                 pp = plt.fill_between(self.years_plot, tmp_bottom, tmp_bottom-values_entity, alpha=0.85,\
-                                      color=self.dico_cols_bars['Other majors'], lw=self.lw_thin_entities, edgecolor=self.dico_cols_bars['separation majors'], label=str(emissions_FF.entity.size-len(self.list_entities_plot))+' other carbon majors' )
+                                      color=self.dico_cols_bars['Other majors'], lw=self.lw_thin_entities, edgecolor=self.dico_cols_bars['separation majors'], label=str(self.emissions_FF.entity.size-len(self.list_entities_plot))+' other carbon majors' )
             tmp_bottom[np.where(~np.isnan(values_entity))] -= values_entity[np.where(~np.isnan(values_entity))]
         plot_2nd_legend.append( pp ) # add only once the last one
         if arrow_or_legend == 'arrow':
@@ -1246,7 +1246,7 @@ class figure_carbonmajors:
                                text=txt, fontcolor_arrow=None, ax=ax)#0.25*tmp_bottom[-1]
 
         # ticks
-        _ = plt.xticks( size=self.fontsizes['ticks'], rotation=-20 )
+        _ = plt.xticks( size=self.fontsizes['ticks'], rotation=0 )
         _ = plt.yticks( size=self.fontsizes['ticks'] )
         
         # y-label
@@ -1523,7 +1523,7 @@ class figure_carbonmajors:
         # polishing
         ax_window.set_xlabel( 'Multiplication of probability\ndue to entity (-)', size=self.fontsizes['pano_labels'] )
         ax_window.set_ylabel( 'Allocation of events (%)', size=self.fontsizes['pano_axis_labels'] )
-        ax_window.set_xticks( ticks=np.arange(len(x_main)), labels=x_main, size=self.fontsizes['pano_axis_ticks'], rotation=-18 )
+        ax_window.set_xticks( ticks=np.arange(len(x_main)), labels=x_main, size=self.fontsizes['pano_axis_ticks'], rotation=-20 )
         #ax_window.set_yticks( ticks=ax_window.get_yticks(), labels=['' for s in ax_window.get_yticks()], size=self.fontsizes['pano_axis_ticks'] )
         if entity in dict_even_shorter_entities:
             lbl = dict_even_shorter_entities[entity]
@@ -1734,7 +1734,7 @@ class create_table_all:
             "Authors: Yann Quilcaille, Lukas Gudmundsson, Dominik Schumacher, Thomas Gasser, Rick Heede, Corina Heri, Quentin Lejeune, Shruti Nath, Philippe Naveau, Wim Thiery, Carl-Friedrich Schleussner, Sonia I. Seneviratne",\
             "Contact: Yann Quilcaille (yann.quilcaille@env.ethz.ch)",\
             " ",\
-            "Description: For each one of the 226 heatwaves reported to the disaster database EM-DAT over 2000-2023, an extreme event attribution is performed, to obtain how much anthropogenic climate change has changed the intensity ('Change in intensity') and multiplied the probability ('Probability Ratio') of the heatwave with reference to preindustrial levels. Each extreme event attribution over 2000-2022 is extended to the emissions of 122 carbon majors, showing how much each carbon major has individually contributed to the intensity ('Contribution to intensity') and multiplied the probability ('Multiplication of preindustrial probability') of the heatwave with reference to preindustrial levels.",\
+            "Description: For each one of the 213 heatwaves reported to the disaster database EM-DAT over 2000-2023, an extreme event attribution is performed, to obtain how much anthropogenic climate change has changed the intensity ('Change in intensity') and multiplied the probability ('Probability Ratio') of the heatwave with reference to preindustrial levels. Each extreme event attribution over 2000-2022 is extended to the emissions of 180 carbon majors, showing how much each carbon major has individually contributed to the intensity ('Contribution to intensity') and multiplied the probability ('Multiplication of preindustrial probability') of the heatwave with reference to preindustrial levels.",\
             "Definition: Extreme Event Attribution: Field of study in climate science that uses physics and statistics to assess the influence of anthropogenic climate change on extreme events, such as heatwaves. More details can be found here: https://www.worldweatherattribution.org/ & https://doi.org/10.5194/ascmo-6-177-2020",\
             "Definition: Carbon Major: Businesses who directly profit from fossil fuel production or other high emitting activities. These entities may be investor-owned, state-owned or nation-states producers. More details can be found here: https://doi.org/10.1007/s10584-013-0986-y",\
             "Disclaimer: The results provided in this table and in the scientific publication are to be considered as scientific information, and not as the quantification of legal responsibilities of actors. This work was driven by two objectives: systematizing extreme event attribution to more events, and extending the attribution to the emitters. The carbon majors were chosen as a category of emitters, because this perspective was less studied by the scientific literature. The entirety of the value chain (Scope 1, 2 and 3) are allocated to the carbon majors, because of data availability.",\
@@ -2106,7 +2106,7 @@ class figure_decomposition:
         ax.legend(loc=0, prop={'size':18})
         _ = plt.xticks( size=14 )
         _ = plt.yticks( size=14 )
-        fig.savefig( os.path.join( path_save, 'figure_decomposition.png' ), dpi=300 )
+        fig.savefig( os.path.join( path_save, 'figure_decomposition.jpg' ), dpi=450 )
         fig.savefig( os.path.join( path_save, 'figure_decomposition.pdf' ) )
 #---------------------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------
@@ -2208,7 +2208,7 @@ def figure_goodness(results, path_save):
     fontsizes = {'title':18, "labels":16, "ticks":14, "legend":16}
     ax = plt.subplot(1, 1, 1)
     func_plot(ax=ax, data=100*test, max_data=100, ylabel="Value of test for each dataset (%)", title="Fraction of sample outside confidence band (%)", scatter_or_boxplot=scatter_or_boxplot)
-    fig.savefig( os.path.join( path_save, "figure_test_"+scatter_or_boxplot+".png" ), dpi=300 )
+    fig.savefig( os.path.join( path_save, "figure_test_"+scatter_or_boxplot+".jpg" ), dpi=450 )
     fig.savefig( os.path.join( path_save, "figure_test_"+scatter_or_boxplot+".pdf" ) )
     
     return test, fig, discarded
@@ -2273,7 +2273,7 @@ def figure_granger(results, events_removed, path_save):
     fontsizes = {'title':18, "labels":16, "ticks":14, "legend":16}
     ax = plt.subplot(1, 1, 1)
     func_plot(ax=ax, data=data_granger, max_data=1, ylabel="Value of the test for the Granger causality for each dataset", title="Granger causality for the heatwaves", scatter_or_boxplot=scatter_or_boxplot)
-    fig.savefig( os.path.join( path_save, "figure_granger_"+scatter_or_boxplot+".png" ), dpi=300 )
+    fig.savefig( os.path.join( path_save, "figure_granger_"+scatter_or_boxplot+".jpg" ), dpi=450 )
     fig.savefig( os.path.join( path_save, "figure_granger_"+scatter_or_boxplot+".pdf" ) )
     
     return data_granger, fig, discarded
